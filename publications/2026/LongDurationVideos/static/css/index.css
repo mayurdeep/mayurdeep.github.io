@@ -1,0 +1,366 @@
+body {
+  font-family: 'Noto Sans', sans-serif;
+}
+
+/* ── Publication header ── */
+.publication-title {
+  font-family: 'Google Sans', sans-serif;
+}
+
+.publication-authors {
+  font-family: 'Google Sans', sans-serif;
+}
+
+.author-block {
+  display: inline-block;
+}
+
+.venue-badge {
+  display: inline-block;
+  margin-top: 0.6rem;
+  padding: 0.35rem 1.2rem;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #4a90d9, #2c6fbe);
+  color: #fff;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.supp-note {
+  margin-top: 0.35rem;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  color: #8a94a0;
+}
+
+/* ── Teaser ── */
+.teaser {
+  font-family: 'Google Sans', sans-serif;
+}
+
+.teaser .hero-body {
+  padding-top: 0;
+  padding-bottom: 3rem;
+}
+
+/* Bulma's .container has auto side margins, so inside the column flex of
+   .hero it shrink-wraps to its content — which made each comparison a
+   different width. Pin it to the full (capped) width instead. */
+.teaser > .container {
+  width: 100%;
+}
+
+/* ── Section headings ── */
+.section-heading {
+  text-align: center;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: #363636;
+  margin-bottom: 0.25rem;
+}
+
+.section-subheading {
+  text-align: center;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 0.95rem;
+  color: #8a94a0;
+  margin-bottom: 1.8rem;
+}
+
+/* ── Dataset button rows: one row per dataset, name on the left ── */
+.dataset-rows {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+  column-gap: 1.4rem;
+  row-gap: 0.75rem;
+  max-width: 1000px;
+  margin: 0 auto 1.8rem auto;
+}
+
+.dataset-row {
+  display: contents;
+}
+
+.dataset-name {
+  justify-self: end;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #9aa5b1;
+  white-space: nowrap;
+}
+
+.dataset-row .teaser-tabs {
+  justify-content: flex-start;
+  margin-bottom: 0;
+}
+
+.teaser-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.6rem;
+}
+
+.teaser-tab {
+  padding: 0.55rem 1.5rem;
+  border: 2px solid #d0d7e2;
+  border-radius: 32px;
+  background: #fff;
+  color: #999;
+  font-size: 1rem;
+  font-family: 'Google Sans', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  min-width: 0;
+}
+
+.teaser-tab:hover {
+  border-color: #4a90d9;
+  color: #4a90d9;
+  box-shadow: 0 4px 12px rgba(74, 144, 217, 0.15);
+}
+
+.teaser-tab.is-active {
+  background: linear-gradient(135deg, #4a90d9, #2c6fbe);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 16px rgba(74, 144, 217, 0.4);
+}
+
+.teaser-canvas-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
+  background: #000;
+}
+
+/* Fills the container, but never taller than the viewport — keeps the
+   4:3 N3DV pair from pushing everything else off screen. */
+.cmp-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 78vh;
+  cursor: col-resize;
+}
+
+/* ── Caption under a comparison ── */
+.video-caption {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 1.05rem;
+  color: #555;
+  line-height: 1.8;
+}
+
+.cap-side {
+  display: inline-block;
+  margin: 0 0.9rem;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 0.95rem;
+  color: #4a4a4a;
+}
+
+.cap-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 0.45rem;
+  vertical-align: -1px;
+}
+
+.cap-left  { background: #b4b4b4; }
+.cap-right { background: linear-gradient(135deg, #4a90d9, #2c6fbe); }
+
+.cap-scene {
+  display: inline-block;
+  margin-left: 0.9rem;
+  padding: 0.15rem 0.75rem;
+  border-radius: 20px;
+  background: #eef2f7;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+  color: #6b7684;
+}
+
+/* ── Pause/play overlay button ── */
+.video-overlay-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.50);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.15s;
+  z-index: 20;
+}
+
+.video-overlay-btn:hover {
+  background: rgba(0, 0, 0, 0.78);
+  transform: scale(1.12);
+}
+
+/* ── Method figure captions ── */
+.method-caption {
+  margin-top: 1rem;
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.75;
+  text-align: justify;
+}
+
+.method-caption strong {
+  color: #363636;
+}
+
+/* ── Mobile (≤ 768px) ── */
+@media screen and (max-width: 768px) {
+  .teaser-tabs {
+    gap: 0.5rem;
+  }
+
+  .teaser-tab {
+    padding: 0.45rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Stack the dataset name above its buttons instead of beside them. */
+  .dataset-rows {
+    grid-template-columns: 1fr;
+    row-gap: 0.35rem;
+  }
+
+  .dataset-name {
+    justify-self: center;
+    margin-top: 0.7rem;
+  }
+
+  .dataset-row .teaser-tabs {
+    justify-content: center;
+  }
+
+  .section-heading {
+    font-size: 1.45rem;
+  }
+
+  .cmp-canvas {
+    max-height: none;
+  }
+}
+
+/* ── Statement about how the baseline is chosen ── */
+.baseline-note {
+  max-width: 62rem;
+  margin: 0 auto 1.6rem;
+  padding: 1rem 1.4rem;
+  border-left: 3px solid #4a90d9;
+  border-radius: 4px;
+  background: #f4f8fc;
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: #4a4a4a;
+  text-align: left;
+}
+
+.baseline-note strong {
+  color: #2c6fbe;
+}
+
+.baseline-note ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+/* Dot drawn explicitly rather than via ::marker, so its size and contrast
+   are controlled and consistent across browsers. */
+.baseline-note li {
+  position: relative;
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.baseline-note li::before {
+  content: "";
+  position: absolute;
+  left: 0.25rem;
+  top: 0.62em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #2c6fbe;
+}
+
+.baseline-note li + li {
+  margin-top: 0.7rem;
+}
+
+/* ── TL;DR summary box under the title block ── */
+.tldr-box {
+  display: flex;
+  align-items: baseline;
+  gap: 0.85rem;
+  max-width: 52rem;
+  margin: 2rem auto 0;
+  padding: 1rem 1.4rem;
+  border: 1px solid #d6e4f5;
+  border-radius: 10px;
+  background: #f4f8fc;
+  text-align: left;
+}
+
+.tldr-tag {
+  flex: 0 0 auto;
+  padding: 0.2rem 0.6rem;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #4a90d9, #2c6fbe);
+  color: #fff;
+  font-family: 'Google Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  white-space: nowrap;
+}
+
+.tldr-box p {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: #3d4753;
+}
+
+@media screen and (max-width: 768px) {
+  .tldr-box {
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0.9rem 1.1rem;
+  }
+
+  .tldr-tag { align-self: flex-start; }
+}

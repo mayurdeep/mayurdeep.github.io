@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="Sustaining Reconstruction Quality in Long-Duration Dynamic 3D Gaussian Splatting: hierarchical temporal sampling and flow-modulated densification for long dynamic video sequences.">
+  <meta name="keywords" content="Gaussian Splatting, 3DGS, Dynamic Scenes, Novel View Synthesis, Long Video">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sustaining Reconstruction Quality in Long-Duration Dynamic 3D Gaussian Splatting</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/video_comparison.js"></script>
+</head>
+<body>
+
+<!-- ══════════════ TITLE ══════════════ -->
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">Sustaining Reconstruction Quality in Long-Duration Dynamic 3D Gaussian Splatting</h1>
+
+          <span class="venue-badge">3DV 2027 Submission &#35;198</span>
+
+          <div class="is-size-5 publication-authors" style="margin-top: 1rem;">
+            <span class="author-block">Anonymous Authors</span>
+          </div>
+          <p class="supp-note">Supplementary material &middot; Paper ID 198</p>
+
+          <div class="tldr-box">
+            <span class="tldr-tag">TL;DR</span>
+            <p>
+              Existing dynamic Gaussian splatting methods lose detail in moving regions as sequences get
+              longer; our approach preserves that detail across long videos.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ LONG-SEQUENCE COMPARISON ══════════════ -->
+<section class="hero teaser">
+  <div class="container is-max-widescreen">
+    <div class="hero-body">
+
+      <h2 class="section-heading">Long-Duration Reconstruction — 3600 Frames (2 min)</h2>
+      <p class="section-subheading">Dataset/Scene: SelfCap/yoga &middot; Trained using 3600 frames  &middot; test cam: cam0005 </p>
+
+      <div class="teaser-canvas-wrap" id="long-stack">
+        <canvas id="longCanvas" class="cmp-canvas" width="960" height="540"></canvas>
+        <video id="longA" muted loop playsinline preload="auto" src="./static/videos/long/baseline.mp4" style="display:none;"></video>
+        <video id="longB" muted loop playsinline preload="auto" src="./static/videos/long/ours.mp4" style="display:none;"></video>
+        <button class="video-overlay-btn" id="long-pause-btn" title="Pause/Play"><i class="fas fa-pause"></i></button>
+      </div>
+
+      <p class="video-caption">
+        <span class="cap-side"><span class="cap-swatch cap-left"></span>Left: <strong>STGS+VAD</strong></span>
+        <span class="cap-side"><span class="cap-swatch cap-right"></span>Right: <strong>Ours</strong></span>
+        <br>
+        Both methods are trained on the same 3600-frame sequence and rendered from the same test view.
+        The baseline blurs out in fast-moving regions; ours stays sharp for the full duration.<br>
+        <em>Move the cursor across the video to slide the split &middot; click to pause.</em>
+      </p>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ PER-SCENE COMPARISONS ══════════════
+     Buttons, canvases and <video> elements are all generated from the
+     DATASETS table in the script below — add a row there to add a scene.
+     ═══════════════════════════════════════════════════════════════ -->
+<section class="hero teaser" style="padding-top: 0;">
+  <div class="container is-max-widescreen">
+    <div class="hero-body" style="padding-top: 3.5rem;">
+
+      <h2 class="section-heading">Per-Scene Comparisons</h2>
+      <p class="section-subheading">Pick a scene to load its comparison</p>
+
+      <div class="baseline-note">
+        <ul>
+          <li>
+            Every comparison below is trained and evaluated on a <strong>1200-frame sequence</strong>.
+          </li>
+          <li>
+            ENeRF-Outdoor, MobileStage and N3DV are captured at this length and form our real-world
+            evaluation. InterDigital is natively 300 frames, which we extend to 1200 by
+            <strong>mirroring the sequence four times</strong>. This gives a controlled setting in which
+            the scene content is held fixed and only the duration grows, isolating the effect of sequence
+            length from any change in scene difficulty.
+          </li>
+          <li>
+            On every scene we compare against the <strong>strongest baseline available for that
+            scene</strong>, rather than a single fixed method or the weakest competitor. The improvements
+            shown here are therefore measured on top of the best existing result in each case.
+          </li>
+        </ul>
+      </div>
+
+      <div id="scene-rows" class="dataset-rows"></div>
+
+      <div class="teaser-canvas-wrap" id="scene-stack">
+        <button class="video-overlay-btn" id="scene-pause-btn" title="Pause/Play"><i class="fas fa-pause"></i></button>
+      </div>
+
+      <p class="video-caption">
+        <span id="scene-caption-line">
+          <span class="cap-side"><span class="cap-swatch cap-left"></span>Left: <strong id="cap-baseline">&mdash;</strong></span>
+          <span class="cap-side"><span class="cap-swatch cap-right"></span>Right: <strong>Ours</strong></span>
+          <span class="cap-scene" id="cap-scene"></span>
+        </span>
+        <br>
+        <em>Move the cursor across the video to slide the split &middot; click to pause.</em>
+      </p>
+
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  /* ─────────────── Long-sequence comparison ─────────────── */
+  (function() {
+    var stack = document.getElementById('long-stack');
+    var btn   = document.getElementById('long-pause-btn');
+    var a     = document.getElementById('longA');
+    var b     = document.getElementById('longB');
+    var paused = false;
+
+    initVideoComparison('longCanvas', 'longA', 'longB', {
+      labelA: 'STGS+VAD',
+      labelB: 'Ours',
+      width:  960,
+      height: 540
+    });
+
+    function toggle() {
+      paused = !paused;
+      paused ? (a.pause(), b.pause()) : (a.play(), b.play());
+      btn.querySelector('i').className = paused ? 'fas fa-play' : 'fas fa-pause';
+    }
+    btn.addEventListener('click', function(e) { e.stopPropagation(); toggle(); });
+    stack.addEventListener('click', toggle);
+  })();
+
+
+  /* ─────────────── Per-scene comparisons ─────────────── */
+
+  // One entry per dataset, in the order the button rows should appear.
+  // baseline = the method shown on the LEFT for that scene (varies per scene).
+  var DATASETS = [
+    { name: 'ENeRF-Outdoor', scenes: [
+        { key: 'ENerfOutdoor_actor1_4', label: 'Actor 1-4',    icon: 'fa-users',         baseline: 'TAD-GS',   w: 960,  h: 544 },
+        { key: 'ENerfOutdoor_actor2_3', label: 'Actor 2-3',    icon: 'fa-users',         baseline: 'TAD-GS',   w: 960,  h: 544 },
+        { key: 'ENerfOutdoor_actor5_6', label: 'Actor 5-6',    icon: 'fa-users',         baseline: 'TAD-GS',   w: 960,  h: 544 }
+      ]},
+    { name: 'MobileStage', scenes: [
+        { key: 'MobileStage_dance3',    label: 'Dance 3',      icon: 'fa-music',         baseline: 'STGS+VAD', w: 960,  h: 544 }
+      ]},
+    { name: 'N3DV', scenes: [
+        { key: 'N3DV_flame_salmon',     label: 'Flame Salmon', icon: 'fa-fire',          baseline: 'TAD-GS',   w: 1352, h: 1014 }
+      ]},
+    { name: 'InterDigital', scenes: [
+        { key: 'InterDigital_Train',    label: 'Train',        icon: 'fa-train',         baseline: 'TAD-GS',   w: 1024, h: 544 },
+        { key: 'InterDigital_Painter',  label: 'Painter',      icon: 'fa-palette',       baseline: 'TAD-GS',   w: 1024, h: 544 },
+        { key: 'InterDigital_Birthday', label: 'Birthday',     icon: 'fa-birthday-cake', baseline: 'TAD-GS',   w: 1024, h: 544 },
+        { key: 'InterDigital_Theater',  label: 'Theater',      icon: 'fa-theater-masks', baseline: 'STGS+VAD', w: 1024, h: 544 },
+        { key: 'InterDigital_Remy',     label: 'Remy',         icon: 'fa-user',          baseline: 'STGS+VAD', w: 1024, h: 544 }
+      ]}
+  ];
+
+  // Flat list of every scene, tagged with the dataset it belongs to.
+  var SCENES = [];
+  DATASETS.forEach(function(d) {
+    d.scenes.forEach(function(s) { s.dataset = d.name; SCENES.push(s); });
+  });
+
+  var DIR      = './static/videos/scenes/';
+  var rowsEl   = document.getElementById('scene-rows');
+  var stackEl  = document.getElementById('scene-stack');
+  var pauseBtn = document.getElementById('scene-pause-btn');
+  var capBase  = document.getElementById('cap-baseline');
+  var capScene = document.getElementById('cap-scene');
+  var active   = null;
+  var paused   = false;
+
+  // ── One button row per dataset ──
+  DATASETS.forEach(function(d) {
+    var row = document.createElement('div');
+    row.className = 'dataset-row';
+
+    var name = document.createElement('span');
+    name.className = 'dataset-name';
+    name.textContent = d.name;
+    row.appendChild(name);
+
+    var tabs = document.createElement('div');
+    tabs.className = 'teaser-tabs';
+    d.scenes.forEach(function(s) {
+      var b = document.createElement('button');
+      b.className = 'teaser-tab';
+      b.dataset.key = s.key;
+      b.innerHTML = '<i class="fas ' + s.icon + '"></i>&nbsp; ' + s.label;
+      b.addEventListener('click', function() { activate(s.key); });
+      tabs.appendChild(b);
+    });
+    row.appendChild(tabs);
+    rowsEl.appendChild(row);
+  });
+
+  // ── Hidden canvas / video stack, one pair per scene ──
+  SCENES.forEach(function(s) {
+    var c = document.createElement('canvas');
+    c.id = s.key + 'Canvas';
+    c.className = 'cmp-canvas';
+    // Size the canvas up front so the box reserves the right aspect ratio
+    // before the video has loaded — avoids a layout jump on first open.
+    c.width  = s.w;
+    c.height = s.h;
+    c.style.display = 'none';
+    stackEl.insertBefore(c, pauseBtn);
+
+    // preload="none" so only the scene you actually open costs bandwidth
+    ['A', 'B'].forEach(function(side) {
+      var v = document.createElement('video');
+      v.id = s.key + side;
+      v.muted = true; v.loop = true; v.playsInline = true;
+      v.preload = 'none';
+      v.style.display = 'none';
+      v.dataset.src = DIR + s.key + '/' + (side === 'A' ? 'baseline' : 'ours') + '.mp4';
+      stackEl.appendChild(v);
+    });
+  });
+
+  // ── Show one scene; load + initialise it the first time it is opened ──
+  function activate(key) {
+    if (active === key) return;
+
+    SCENES.forEach(function(s) {
+      var on = (s.key === key);
+      document.getElementById(s.key + 'Canvas').style.display = on ? 'block' : 'none';
+
+      ['A', 'B'].forEach(function(side) {
+        var v = document.getElementById(s.key + side);
+        if (!on) { v.pause(); return; }
+        if (!v.src) { v.src = v.dataset.src; v.load(); }   // first open: fetch
+      });
+
+      if (!on) return;
+
+      // Caption names the baseline actually used for this scene.
+      capBase.textContent  = s.baseline;
+      capScene.textContent = s.dataset + ' / ' + s.label;
+
+      if (!s.inited) {
+        s.inited = true;
+        initVideoComparison(s.key + 'Canvas', s.key + 'A', s.key + 'B', {
+          labelA: s.baseline,
+          labelB: 'Ours',
+          width:  s.w,
+          height: s.h
+        });
+      } else if (!paused) {
+        document.getElementById(s.key + 'A').play();
+        document.getElementById(s.key + 'B').play();
+      }
+    });
+
+    document.querySelectorAll('#scene-rows .teaser-tab').forEach(function(t) {
+      t.classList.toggle('is-active', t.dataset.key === key);
+    });
+
+    active = key;
+    paused = false;
+    pauseBtn.querySelector('i').className = 'fas fa-pause';
+
+    // Reflect the scene in the URL so a specific comparison can be linked to.
+    if (history.replaceState) history.replaceState(null, '', '#' + key);
+  }
+
+  // ── Pause / play the active pair ──
+  function toggle() {
+    if (!active) return;
+    paused = !paused;
+    ['A', 'B'].forEach(function(side) {
+      var v = document.getElementById(active + side);
+      paused ? v.pause() : v.play();
+    });
+    pauseBtn.querySelector('i').className = paused ? 'fas fa-play' : 'fas fa-pause';
+  }
+  pauseBtn.addEventListener('click', function(e) { e.stopPropagation(); toggle(); });
+  stackEl.addEventListener('click', toggle);
+
+  // Open the scene named in the URL hash, else the first one.
+  function keyFromHash() {
+    var h = decodeURIComponent(location.hash.replace(/^#/, ''));
+    return SCENES.some(function(s) { return s.key === h; }) ? h : SCENES[0].key;
+  }
+  window.addEventListener('hashchange', function() { activate(keyFromHash()); });
+  activate(keyFromHash());
+});
+</script>
+
+
+<!-- ══════════════ ABSTRACT ══════════════ -->
+<section class="section">
+  <div class="container is-max-widescreen">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Existing dynamic 3D Gaussian splatting methods achieve high-quality reconstruction on short
+            sequences, but their performance degrades on longer videos, particularly in fast-moving regions.
+            We observe that, as motion becomes more complex over longer sequences, Gaussians naturally develop
+            shorter temporal spans to specialize to different segments of motion. However, temporal spans in
+            dynamic regions often collapse before sufficient gradients can accumulate to trigger effective
+            densification, causing these regions to become underrepresented and resulting in blur artifacts.
+          </p>
+          <p>
+            To address these challenges, we introduce two complementary components. First, we stabilize
+            optimization with a <em>hierarchical temporal sampling</em> strategy that begins with sparse frame
+            subsets and progressively increases temporal resolution. Second, we introduce a
+            <em>flow-modulated densification</em> scheme that leverages optical flow to identify dynamic
+            regions and selectively applies aggressive densification. Together, these components significantly
+            improve reconstruction quality and make dynamic 3D Gaussian splatting more reliable on long video
+            sequences.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════ METHOD ══════════════ -->
+<section class="section" style="padding-top: 0;">
+  <div class="container is-max-widescreen">
+    <h2 class="title is-3 has-text-centered">Method</h2>
+
+    <!-- HTS -->
+    <div class="columns is-centered" style="margin-top: 1.5rem;">
+      <div class="column is-four-fifths">
+        <h3 class="title is-4">Hierarchical Temporal Sampling (HTS)</h3>
+        <figure style="margin: 0;">
+          <img src="./static/images/HTS_method_diagram.png"
+               alt="Hierarchical Temporal Sampling: training progresses from coarse to fine temporal levels"
+               style="width:100%; display:block; border-radius: 8px;">
+          <figcaption class="method-caption">
+            <strong>Training proceeds coarse-to-fine in time.</strong> Level <em>L</em><sub>0</sub> samples
+            timestamps on a uniform grid of spacing &Delta;; each subsequent level halves the spacing and
+            introduces the new intermediate frames, replaying frames from earlier levels so previously learned
+            motion is not forgotten. Between levels the anchor parameters
+            {&mu;<sub>0</sub>, <em>q</em><sub>rot</sub>, <em>c</em>, <em>s</em>, &alpha;, &tau;<sub>c</sub>}
+            are frozen, preserving the scene representation already recovered while the model takes on
+            finer temporal detail. Gaussians therefore receive enough supervision to densify even as motion
+            becomes complex.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <!-- FMD -->
+    <div class="columns is-centered" style="margin-top: 3rem;">
+      <div class="column is-four-fifths">
+        <h3 class="title is-4">Flow-Modulated Densification (FMD)</h3>
+        <figure style="margin: 0;">
+          <img src="./static/images/FMD_method_diagram.png"
+               alt="Flow-Modulated Densification: optical flow lowers the densification threshold for fast-moving Gaussians"
+               style="width:100%; display:block; border-radius: 8px;">
+          <figcaption class="method-caption">
+            <strong>Motion is measured per Gaussian, then used to modulate its densification threshold.</strong>
+            Optical-flow magnitudes <em>m<sub>i</sub></em> under a Gaussian's footprint are combined using its
+            rasterization weights <em>w<sub>i</sub></em> to give a motion contribution
+            <em>m<sub>g</sub></em>(<em>V</em>,&nbsp;<em>t</em>), which is summed over every view and timestamp
+            rendered in the densification window. The threshold <em>T<sub>g</sub></em> decays from
+            <em>T</em><sub>max</sub> toward <em>T</em><sub>min</sub> as <em>m<sub>g</sub></em> grows, so
+            Gaussians in high-motion regions clear a much lower bar. The result is many more Gaussians
+            allocated where motion is fastest, exactly where the baseline under-reconstructs.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content has-text-centered">
+          <p>
+            This website is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+            This webpage template is from <a href="https://github.com/nerfies/nerfies.github.io" target="_blank">Nerfies</a>.
+            We sincerely thank <a href="https://keunhong.com/" target="_blank">Keunhong Park</a> for developing and open-sourcing this template.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
