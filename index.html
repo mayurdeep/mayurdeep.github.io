@@ -4,158 +4,156 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mayurdeep Pathak</title>
-  <meta name="description" content="Mayurdeep Pathak, Indian Institute of Science. Dynamic scene reconstruction, novel view synthesis, 3D Gaussian splatting.">
-  <link rel="icon" href="assets/favicon.png">
+  <meta name="description" content="Mayurdeep Pathak, Indian Institute of Science. Dynamic scene reconstruction and novel view synthesis.">
+  <meta property="og:image" content="https://mayurdeep.github.io/assets/ambassadors.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&display=swap" rel="stylesheet">
   <style>
-    :root { color-scheme: light; }
+    :root {
+      --bg: #faf8f4;
+      --ink: #1f1d1a;
+      --ink-2: #55514a;
+      --ink-3: #8b867d;
+      --rule: #e4dfd5;
+      --link: #8a3b24;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #151412; --ink: #ece8e1; --ink-2: #b3ada3; --ink-3: #7f7a71; --rule: #2b2925;
+        --link: #e0a089;
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #151412; --ink: #ece8e1; --ink-2: #b3ada3; --ink-3: #7f7a71; --rule: #2b2925;
+      --link: #e0a089;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; }
     body {
-      margin: 0; background: #fff; color: #777;
-      font: 400 15px/1.6 Roboto, Helvetica, Arial, sans-serif;
+      margin: 0; background: var(--bg); color: var(--ink);
+      font: 400 19px/1.6 Newsreader, Georgia, serif;
+      font-optical-sizing: auto;
+      -webkit-font-smoothing: antialiased;
     }
-    a { color: #999; text-decoration: none; transition: color .15s; }
-    a:hover { color: #000; }
-    b, .head { color: #000; font-weight: 700; }
+    main { max-width: 680px; margin: 0 auto; padding: 72px 16px 56px; }
+    a { color: var(--link); text-decoration: none; }
+    a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
-    /* two columns, as on an old framed page: the cow and the menu on the left, a narrow column of text on the right */
-    .page { display: flex; align-items: flex-start; gap: 40px; max-width: 980px; padding: 40px 45px; }
-    .side { position: sticky; top: 40px; flex: 0 0 300px; }
-    .logo { position: relative; width: 270px; height: 228px; margin-left: -10px; }
-    .logo img {
-      width: 270px; height: 228px; display: block;
-      -webkit-mask-image: radial-gradient(closest-side, #000 72%, transparent);
-              mask-image: radial-gradient(closest-side, #000 72%, transparent);
+    header h1 { font-weight: 400; font-size: 40px; line-height: 1.1; margin: 0 0 6px; letter-spacing: -.01em; }
+    header .affil { color: var(--ink-2); margin: 0; }
+    header .links { margin: 10px 0 0; color: var(--ink-3); font-size: 17px; }
+
+    figure { margin: 48px 0 44px; }
+    .frame { position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: #1b1712; cursor: zoom-in; }
+    .frame img {
+      position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+      transform-origin: 47.5% 88.2%;
+      transition: transform 1.4s cubic-bezier(.6,0,.2,1);
     }
-    .caption { position: absolute; left: 22px; bottom: -2px; margin: 0; font-size: 11px; color: #aaa; font-style: italic; }
-    .name { margin: 4px 0 0 140px; font-size: 26px; line-height: 1.2; letter-spacing: -.01em; white-space: nowrap; }
-    .name .a { color: #5f86c8; }
-    .name .b { color: #b3202a; }
+    /* stand where Holbein meant you to: squash along the skull's axis, then bring it to the middle */
+    .frame.turned img { transform: translateY(-36%) scale(2.1) rotate(-23.9deg) scaleX(.22) rotate(23.9deg); }
+    .frame.turned { cursor: zoom-out; }
+    @media (prefers-reduced-motion: reduce) { .frame img { transition: none; } }
+    figcaption { margin-top: 12px; font-size: 15.5px; line-height: 1.5; color: var(--ink-3); font-style: italic; }
+    figcaption .work { font-style: normal; }
+    figcaption .hint { display: block; margin-top: 4px; }
 
-    nav { margin: 18px 0 0 140px; font-size: 16px; line-height: 1.55; }
-    nav a { display: block; }
-    nav a::before { content: ". "; color: #777; }
-    nav a.on { color: #000; }
+    h2 { font-weight: 400; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin: 52px 0 18px; }
+    p { margin: 0 0 16px; }
+    .quiet { color: var(--ink-2); }
 
-    main { flex: 0 1 520px; padding-top: 150px; }
-    section { display: none; }
-    section.on { display: block; }
-    .no-js section { display: block; margin-bottom: 40px; }
-    .head { font-size: 16px; margin: 0 0 22px; }
-    p { margin: 0 0 14px; }
-    ul { list-style: none; margin: 0; padding: 0; }
-    li { margin: 0 0 16px; }
-    li .t { font-weight: 700; display: block; color: #999; }
-    li .t:hover { color: #000; }
-    li > span { display: block; font-size: 14px; }
-    .me { color: #000; }
-    .copyright { margin-top: 60px; font-size: 11px; color: #999; }
+    .pubs { list-style: none; margin: 0; padding: 0; }
+    .pubs li { margin: 0 0 22px; }
+    .pubs .t { display: block; }
+    .pubs .a, .pubs .v { display: block; font-size: 16.5px; color: var(--ink-2); }
+    .pubs .me { color: var(--ink); }
+    .pubs .v i { color: var(--ink-3); }
 
-    @media (max-width: 760px) {
-      .page { display: block; padding: 24px 16px 40px; }
-      .side { position: static; }
-      .logo { width: 220px; height: 186px; }
-      .logo img { width: 220px; height: 186px; }
-      .name { margin: 4px 0 0 0; font-size: 24px; }
-      nav { margin: 12px 0 0 0; }
-      nav a { display: inline; margin-right: 14px; }
-      main { padding-top: 32px; }
-    }
+    footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 14.5px; color: var(--ink-3); }
   </style>
 </head>
-<body class="no-js">
-<div class="page">
+<body>
+<main>
 
-  <div class="side">
-    <div class="logo">
-      <img src="assets/gaussian-cow.webp" alt="A cow made of a few dozen 3D Gaussians, standing in a sky that is also a Gaussian" width="270" height="228">
-      <p class="caption">assume a gaussian cow.</p>
+  <header>
+    <h1>Mayurdeep Pathak</h1>
+    <p class="affil">Indian Institute of Science, Bangalore</p>
+    <p class="links">
+      <a href="mailto:mayurdeepp@iisc.ac.in">Email</a> ·
+      <a href="https://www.linkedin.com/in/mayurdeep-pathak-47a01b89/">LinkedIn</a> ·
+      <a href="https://github.com/mayurdeep">GitHub</a>
+    </p>
+  </header>
+
+  <figure>
+    <div class="frame" id="frame" role="button" tabindex="0" aria-pressed="false"
+         aria-label="Look at the painting from the side, the way Holbein intended">
+      <img src="assets/ambassadors.jpg" alt="Hans Holbein the Younger, The Ambassadors: two men beside a table of instruments, with a long, distorted shape slanting across the floor" width="1600" height="1577">
     </div>
-    <div class="name"><span class="a">mayurdeep</span><span class="b">::pathak</span></div>
-    <nav>
-      <a href="#about">about</a>
-      <a href="#research">research</a>
-      <a href="#contact">contact</a>
-    </nav>
-  </div>
+    <figcaption>
+      Hans Holbein the Younger, <span class="work">The Ambassadors</span>, 1533. The smear across the floor is a skull,
+      legible from a single viewpoint well off to the side. View-dependent effects have been a problem for some time.
+      <span class="hint">Hover, or tap, to stand where Holbein meant you to.</span>
+    </figcaption>
+  </figure>
 
-  <main>
-    <section id="about">
-      <p class="head">about</p>
-      <p>
-        I am a graduate student at the Indian Institute of Science, Bangalore, in the Visual Information
-        Processing Lab with Prof. Rajiv Soundararajan.
-      </p>
-      <p>
-        I work on reconstructing scenes that move. Given a few synchronized videos of an event, the aim is a
-        three-dimensional record of it that can be watched from any viewpoint, at any moment. Most of my time
-        goes into the parts that move, which are, inconveniently, the parts people look at.
-      </p>
-      <p>
-        Broadly: 3D vision, dynamic scene reconstruction, novel view synthesis, and image and video processing.
-      </p>
-      <p>
-        The cow is made of a few dozen 3D Gaussians. Physicists assume a spherical cow; we have moved on.
-      </p>
-    </section>
+  <section>
+    <p>
+      I am a graduate student in the Visual Information Processing Lab at the Indian Institute of Science,
+      working with Prof. Rajiv Soundararajan.
+    </p>
+    <p>
+      I study how to reconstruct scenes that move. Given a few synchronized videos of an event, the aim is a
+      three-dimensional record of it that can be seen from any viewpoint, at any moment. The still parts of a scene
+      have become easy; the people in it have not. Hands, faces and the folds of a sleeve are where reconstructions
+      soften, and that is where I spend most of my time: first making them sharp, then keeping them sharp as a
+      recording runs from seconds into minutes.
+    </p>
+    <p class="quiet">
+      More broadly: 3D vision, dynamic scene reconstruction, novel view synthesis, and image and video processing.
+    </p>
+  </section>
 
-    <section id="research">
-      <p class="head">research</p>
-      <ul>
-        <li>
-          <a class="t" href="publications/2026/LongDurationVideos/">Sustaining Reconstruction Quality in Long-Duration Dynamic 3D Gaussian Splatting</a>
-          <span><span class="me">Mayurdeep Pathak</span>, Vikram Sandu, Rajiv Soundararajan</span>
-          <span><a href="publications/2026/LongDurationVideos/">project page</a></span>
-        </li>
-        <li>
-          <a class="t" href="publications/2026/TAD_GS/">Temporally Aware Densification for Dynamic 3D Gaussian Splatting</a>
-          <span>Vikram Sandu, <span class="me">Mayurdeep Pathak</span>, Rajiv Soundararajan</span>
-          <span>ECCV 2026 &middot; <a href="publications/2026/TAD_GS/">project page</a> &middot; <a href="https://arxiv.org/abs/2606.23212">arXiv</a></span>
-        </li>
-        <li>
-          <a class="t" href="https://ieeexplore.ieee.org/iel8/10605128/10605229/10605484.pdf">GlobeMetrics: A Healthcare Framework for Video Based Saccade Characterization</a>
-          <span>Debanga Raj Neog, Pharvesh Salman Choudhary, <span class="me">Mayurdeep Pathak</span></span>
-          <span>IEEE CAI 2024 &middot; <a href="https://ieeexplore.ieee.org/iel8/10605128/10605229/10605484.pdf">IEEE Xplore</a></span>
-        </li>
-      </ul>
-    </section>
+  <section>
+    <h2>Publications</h2>
+    <ul class="pubs">
+      <li>
+        <a class="t" href="publications/2026/LongDurationVideos/">Sustaining Reconstruction Quality in Long-Duration Dynamic 3D Gaussian Splatting</a>
+        <span class="a"><span class="me">Mayurdeep Pathak</span>, Vikram Sandu, Rajiv Soundararajan</span>
+        <span class="v"><a href="publications/2026/LongDurationVideos/">Project page</a></span>
+      </li>
+      <li>
+        <a class="t" href="publications/2026/TAD_GS/">Temporally Aware Densification for Dynamic 3D Gaussian Splatting</a>
+        <span class="a">Vikram Sandu, <span class="me">Mayurdeep Pathak</span>, Rajiv Soundararajan</span>
+        <span class="v"><i>ECCV 2026</i> · <a href="publications/2026/TAD_GS/">Project page</a> · <a href="https://arxiv.org/abs/2606.23212">arXiv</a></span>
+      </li>
+      <li>
+        <a class="t" href="https://ieeexplore.ieee.org/iel8/10605128/10605229/10605484.pdf">GlobeMetrics: A Healthcare Framework for Video Based Saccade Characterization</a>
+        <span class="a">Debanga Raj Neog, Pharvesh Salman Choudhary, <span class="me">Mayurdeep Pathak</span></span>
+        <span class="v"><i>IEEE CAI 2024</i></span>
+      </li>
+    </ul>
+  </section>
 
-    <section id="contact">
-      <p class="head">contact</p>
-      <p>
-        Visual Information Processing Lab<br>
-        Department of Electrical Communication Engineering<br>
-        Indian Institute of Science, Bangalore 560012
-      </p>
-      <p>
-        <a href="mailto:mayurdeepp@iisc.ac.in">mayurdeepp@iisc.ac.in</a><br>
-        <a href="https://www.linkedin.com/in/mayurdeep-pathak-47a01b89/">linkedin</a> &middot;
-        <a href="https://github.com/mayurdeep">github</a>
-      </p>
-    </section>
+  <footer>
+    Image: Hans Holbein the Younger, <i>The Ambassadors</i>, 1533, National Gallery, London (public domain, via Wikimedia Commons).
+  </footer>
 
-    <p class="copyright">copyrights&copy;2026. Mayurdeep Pathak</p>
-  </main>
-
-</div>
+</main>
 <script>
-  // one section at a time, chosen from the menu, like the frames of an old site
-  document.body.classList.remove('no-js');
-  const show = () => {
-    const id = (location.hash || '#about').slice(1);
-    const target = document.getElementById(id) ? id : 'about';
-    document.querySelectorAll('main section').forEach(s => s.classList.toggle('on', s.id === target));
-    document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + target));
-  };
-  document.querySelectorAll('nav a').forEach(a => a.addEventListener('click', e => {
-    e.preventDefault();
-    history.replaceState(null, '', a.getAttribute('href'));
-    show();
-  }));
-  addEventListener('hashchange', show);
-  show();
-  scrollTo(0, 0);
+  // hover on a mouse; tap or keyboard elsewhere
+  const frame = document.getElementById('frame');
+  const set = on => { frame.classList.toggle('turned', on); frame.setAttribute('aria-pressed', on); };
+  let mouse = false;
+  frame.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { mouse = true; set(true); } });
+  frame.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') set(false); });
+  frame.addEventListener('click', () => { if (!mouse) set(!frame.classList.contains('turned')); });
+  frame.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set(!frame.classList.contains('turned')); } });
 </script>
+
 </body>
 </html>
