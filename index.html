@@ -49,11 +49,13 @@
     header .links { margin: 10px 0 0; color: var(--ink-3); font-size: 17px; }
 
     figure { margin: 48px 0 44px; }
-    .stage { position: relative; aspect-ratio: 1600 / 901; cursor: crosshair; touch-action: pan-y; }
-    .stage img, .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-    .stage canvas { opacity: 0; transition: opacity .6s; }
+    .stage { position: relative; aspect-ratio: 16 / 9; border-radius: 3px; overflow: hidden; cursor: grab; touch-action: pan-y; }
+    .stage img, .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; object-fit: cover; }
+    .stage { background: #2a241d; }
+    .stage img { display: none; }
+    .stage.fallback img { display: block; }
+    .stage canvas { opacity: 0; transition: opacity .8s; }
     .stage.ready canvas { opacity: 1; }
-    .stage.ready img { visibility: hidden; transition: visibility 0s .6s; }
     figcaption { margin-top: 12px; font-size: 15.5px; line-height: 1.5; color: var(--ink-3); font-style: italic; }
     figcaption .work { font-style: normal; }
 
@@ -93,8 +95,8 @@
       <canvas id="view" aria-hidden="true"></canvas>
     </div>
     <figcaption>
-      Leonardo da Vinci, <span class="work">The Last Supper</span>, c. 1495–98, lifted into three dimensions
-      from its single viewpoint. Move across it to step out of that viewpoint, and see how much one view leaves out.
+      After Leonardo da Vinci, <span class="work">The Last Supper</span>, c. 1495–98, rebuilt in three dimensions
+      and set within a ring of synchronized cameras. Move across it to walk around the table.
     </figcaption>
   </figure>
 
@@ -142,179 +144,6 @@
 
 </main>
 
-<script type="module">
-import * as THREE from 'three';
-
-/* The painting is a single perspective view whose vanishing point sits at Christ's head.
-   From the wall edges we recover that camera (focal length F, principal point CX, CY, in a
-   1600 × 901 image) and a box-shaped room consistent with it. Every surface is textured by
-   projecting the painting back through that camera, so from the original viewpoint the
-   render is the painting. Anything the original camera could not see is drawn as "no data". */
-const IW = 1600, IH = 901, F = 1600, CX = 803, CY = 457;
-const R = {                       // room in metres; the painter's camera sits at the origin looking down -z
-  zf: -9.6, zb: -30, xl: -4.84, xr: 4.86, yc: 4.41, yf: -2.75,
-  zt: -10.6, yt: -1.21, ytb: -1.93, zc: -11.9,
-  xt0: (115 - CX) * 10.6 / F, xt1: (1510 - CX) * 10.6 / F
-};
-
-const stage = document.getElementById('stage');
-const canvas = document.getElementById('view');
-let renderer = null;
-try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true }); } catch (e) {}
-
-if (renderer) {
-  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;   // texture values pass through untouched
-  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera();
-
-  const col = n => new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue(n).trim()).toArray();
-  const uniforms = {
-    map: { value: null }, cut: { value: null },
-    noA: { value: new THREE.Vector3(...col('--nodata-a')) },
-    noB: { value: new THREE.Vector3(...col('--nodata-b')) },
-    cell: { value: 10 * renderer.getPixelRatio() }
-  };
-
-  const vert = `
-    varying vec3 vP;
-    void main() { vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-
-  const f = v => v.toFixed(4);
-  const frag = `
-    uniform sampler2D map, cut;
-    uniform vec3 noA, noB;
-    uniform float cell;
-    uniform bool isCut;
-    varying vec3 vP;
-    const float F = ${f(F)}, CX = ${f(CX)}, CY = ${f(CY)}, IW = ${f(IW)}, IH = ${f(IH)};
-
-    bool inb(float v, vec2 b) { return v >= b.x - 1e-3 && v <= b.y + 1e-3; }
-    float hx(vec3 d, float x, vec2 yb, vec2 zb) { float t = x / d.x; vec3 p = t * d; return (t > 0. && inb(p.y, yb) && inb(p.z, zb)) ? t : 1e9; }
-    float hy(vec3 d, float y, vec2 xb, vec2 zb) { float t = y / d.y; vec3 p = t * d; return (t > 0. && inb(p.x, xb) && inb(p.z, zb)) ? t : 1e9; }
-    float hz(vec3 d, float z, vec2 xb, vec2 yb) { float t = z / d.z; vec3 p = t * d; return (t > 0. && inb(p.x, xb) && inb(p.y, yb)) ? t : 1e9; }
-
-    // distance to the first surface the painter's camera saw along direction d
-    float seenDepth(vec3 d, bool figure) {
-      vec2 X = vec2(${f(R.xl)}, ${f(R.xr)}), Y = vec2(${f(R.yf)}, ${f(R.yc)}), Z = vec2(${f(R.zb)}, ${f(R.zf)});
-      vec2 XT = vec2(${f(R.xt0)}, ${f(R.xt1)});
-      float t = 1e9;
-      t = min(t, hx(d, ${f(R.xl)}, Y, Z));  t = min(t, hx(d, ${f(R.xr)}, Y, Z));
-      t = min(t, hy(d, ${f(R.yc)}, X, Z));  t = min(t, hy(d, ${f(R.yf)}, X, Z));
-      t = min(t, hz(d, ${f(R.zb)}, X, Y));
-      t = min(t, hz(d, ${f(R.zt)}, XT, vec2(${f(R.ytb)}, ${f(R.yt)})));
-      t = min(t, hy(d, ${f(R.yt)}, XT, vec2(${f(R.zc)}, ${f(R.zt)})));
-      if (figure) t = min(t, hz(d, ${f(R.zc)}, X, vec2(${f(R.yt)}, 3.0)));
-      return t;
-    }
-
-    void main() {
-      float z = -vP.z;
-      vec2 px = vec2(CX + F * vP.x / z, CY - F * vP.y / z);
-      vec2 uv = vec2(px.x / IW, 1.0 - px.y / IH);
-      bool inside = z > 0. && uv.x >= 0. && uv.x <= 1. && uv.y >= 0. && uv.y <= 1.;
-      bool figure = inside && texture2D(cut, uv).r > 0.5;
-      if (isCut && !figure) discard;
-      bool seen = inside && length(vP) <= seenDepth(normalize(vP), figure) + 0.03;
-      if (seen) { gl_FragColor = texture2D(map, uv); return; }
-      float c = mod(floor(gl_FragCoord.x / cell) + floor(gl_FragCoord.y / cell), 2.0);
-      gl_FragColor = vec4(mix(noA, noB, c), 1.0);
-    }`;
-
-  const mat = isCut => new THREE.ShaderMaterial({
-    uniforms: { ...uniforms, isCut: { value: isCut } },
-    vertexShader: vert, fragmentShader: frag, side: THREE.DoubleSide
-  });
-  const wallMat = mat(false), cutMat = mat(true);
-
-  function quad(a, b, c, d, m) {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.Float32BufferAttribute([...a, ...b, ...c, ...a, ...c, ...d], 3));
-    scene.add(new THREE.Mesh(g, m));
-  }
-  const { zf, zb, xl, xr, yc, yf, zt, yt, ytb, zc, xt0, xt1 } = R;
-  quad([xl, yf, zf], [xl, yf, zb], [xl, yc, zb], [xl, yc, zf], wallMat);       // left wall
-  quad([xr, yf, zf], [xr, yf, zb], [xr, yc, zb], [xr, yc, zf], wallMat);       // right wall
-  quad([xl, yc, zf], [xr, yc, zf], [xr, yc, zb], [xl, yc, zb], wallMat);       // ceiling
-  quad([xl, yf, zf], [xr, yf, zf], [xr, yf, zb], [xl, yf, zb], wallMat);       // floor
-  quad([xl, yf, zb], [xr, yf, zb], [xr, yc, zb], [xl, yc, zb], wallMat);       // back wall
-  quad([xt0, ytb, zt], [xt1, ytb, zt], [xt1, yt, zt], [xt0, yt, zt], wallMat); // tablecloth
-  quad([xt0, yt, zt], [xt1, yt, zt], [xt1, yt, zc], [xt0, yt, zc], wallMat);   // table top
-  quad([xl, yt, zc], [xr, yt, zc], [xr, 3, zc], [xl, 3, zc], cutMat);          // the apostles, as painted
-
-  // keep Leonardo's intrinsics in every view, including his slightly off-centre principal point
-  function setProjection() {
-    const n = 0.05;
-    camera.projectionMatrix.makePerspective(-CX / F * n, (IW - CX) / F * n, CY / F * n, -(IH - CY) / F * n, n, 100);
-    camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
-  }
-
-  // the camera orbits a point on the table; yaw = pitch = 0 is the painter's own viewpoint
-  const pivot = new THREE.Vector3(0, 0, -12);
-  const cur = { yaw: 0, pitch: 0 }, tgt = { yaw: 0, pitch: 0 };
-  function place() {
-    const r = 12;
-    camera.position.set(
-      pivot.x + r * Math.sin(cur.yaw) * Math.cos(cur.pitch),
-      pivot.y + r * Math.sin(cur.pitch),
-      pivot.z + r * Math.cos(cur.yaw) * Math.cos(cur.pitch));
-    camera.lookAt(pivot);
-  }
-
-  let dirty = true, running = false;
-  function frame() {
-    cur.yaw += (tgt.yaw - cur.yaw) * 0.07; cur.pitch += (tgt.pitch - cur.pitch) * 0.07;
-    const moving = Math.abs(tgt.yaw - cur.yaw) + Math.abs(tgt.pitch - cur.pitch) > 1e-4;
-    if (moving || dirty) { place(); renderer.render(scene, camera); dirty = false; }
-    if (moving) requestAnimationFrame(frame); else running = false;
-  }
-  const kick = () => { if (!running) { running = true; requestAnimationFrame(frame); } };
-
-  function resize() {
-    renderer.setSize(stage.clientWidth, stage.clientHeight, false);
-    setProjection(); dirty = true; kick();
-  }
-
-  const YAW = 0.28, PITCH = 0.2;
-  function aim(e) {
-    const r = stage.getBoundingClientRect();
-    const nx = ((e.clientX - r.left) / r.width) * 2 - 1, ny = ((e.clientY - r.top) / r.height) * 2 - 1;
-    tgt.yaw = -nx * YAW; tgt.pitch = -ny * PITCH; kick();
-  }
-  const home = () => { tgt.yaw = 0; tgt.pitch = 0; kick(); };
-  stage.addEventListener('pointermove', e => { if (e.pointerType === 'mouse' || e.buttons) aim(e); });
-  stage.addEventListener('pointerdown', aim);
-  stage.addEventListener('pointerleave', home);
-  stage.addEventListener('pointerup', e => { if (e.pointerType !== 'mouse') home(); });
-  stage.addEventListener('pointercancel', home);
-
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    uniforms.noA.value.set(...col('--nodata-a')); uniforms.noB.value.set(...col('--nodata-b'));
-    dirty = true; kick();
-  });
-
-  const loader = new THREE.TextureLoader();
-  const tex = url => new Promise((ok, no) => loader.load(url, t => { t.colorSpace = THREE.NoColorSpace; t.anisotropy = 4; ok(t); }, undefined, no));
-  Promise.all([tex('assets/last-supper.jpg'), tex('assets/last-supper-cutout.png')]).then(([m, c]) => {
-    uniforms.map.value = m; uniforms.cut.value = c;
-    resize(); place(); renderer.render(scene, camera);
-    stage.classList.add('ready');
-    new ResizeObserver(resize).observe(stage);
-
-    // one slow, small turn on arrival so the depth announces itself, then back to Leonardo's view
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const io = new IntersectionObserver(([en]) => {
-        if (!en.isIntersecting) return;
-        io.disconnect();
-        setTimeout(() => {
-          tgt.yaw = -0.16; tgt.pitch = 0.08; kick();
-          setTimeout(() => { if (tgt.yaw === -0.16) home(); }, 1600);
-        }, 900);
-      }, { threshold: 0.6 });
-      io.observe(stage);
-    }
-  }).catch(() => {});
-}
-</script>
+<script type="module" src="assets/supper.js"></script>
 </body>
 </html>
