@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    path { fill: none; stroke: #8a3b24; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+    .back { opacity: .45; }
+    @media (prefers-color-scheme: dark) { path { stroke: #e0a089; } }
+  </style>
+  <path class="back" d="M12 5h15v15M12 5v15h15M12 20l-7 7"/>
+  <path d="M5 12h15v15H5zM5 12l7-7M20 12l7-7M20 27l7-7"/>
+</svg>
