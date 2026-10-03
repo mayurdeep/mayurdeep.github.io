@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mayurdeep Pathak</title>
   <meta name="description" content="Mayurdeep Pathak, Indian Institute of Science. Dynamic scene reconstruction and novel view synthesis.">
-  <meta property="og:image" content="https://mayurdeep.github.io/assets/ambassadors.jpg">
+  <meta property="og:image" content="https://mayurdeep.github.io/assets/false-perspective.jpg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..500&display=swap" rel="stylesheet">
@@ -47,20 +47,11 @@
     header .affil { color: var(--ink-2); margin: 0; }
     header .links { margin: 10px 0 0; color: var(--ink-3); font-size: 17px; }
 
-    figure { margin: 48px 0 44px; }
-    .frame { position: relative; aspect-ratio: 1 / 1; overflow: hidden; background: #1b1712; cursor: zoom-in; }
-    .frame img {
-      position: absolute; inset: 0; width: 100%; height: 100%; display: block;
-      transform-origin: 47.5% 88.2%;
-      transition: transform 1.4s cubic-bezier(.6,0,.2,1);
-    }
-    /* stand where Holbein meant you to: squash along the skull's axis, then bring it to the middle */
-    .frame.turned img { transform: translateY(-36%) scale(2.1) rotate(-23.9deg) scaleX(.22) rotate(23.9deg); }
-    .frame.turned { cursor: zoom-out; }
-    @media (prefers-reduced-motion: reduce) { .frame img { transition: none; } }
+    figure { margin: 48px auto 44px; max-width: 560px; }
+    figure img { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; mix-blend-mode: multiply; }
+    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) figure img { mix-blend-mode: normal; } }
     figcaption { margin-top: 12px; font-size: 15.5px; line-height: 1.5; color: var(--ink-3); font-style: italic; }
     figcaption .work { font-style: normal; }
-    figcaption .hint { display: block; margin-top: 4px; }
 
     h2 { font-weight: 400; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin: 52px 0 18px; }
     p { margin: 0 0 16px; }
@@ -90,14 +81,10 @@
   </header>
 
   <figure>
-    <div class="frame" id="frame" role="button" tabindex="0" aria-pressed="false"
-         aria-label="Look at the painting from the side, the way Holbein intended">
-      <img src="assets/ambassadors.jpg" alt="Hans Holbein the Younger, The Ambassadors: two men beside a table of instruments, with a long, distorted shape slanting across the floor" width="1600" height="1577">
-    </div>
+    <img src="assets/false-perspective.jpg" width="1120" height="1466"
+         alt="Hogarth's engraving of a landscape full of impossible perspective: a man on a distant hill lights his pipe from a candle held out of a nearby window, and fishing lines cross between the foreground and the far bank">
     <figcaption>
-      Hans Holbein the Younger, <span class="work">The Ambassadors</span>, 1533. The smear across the floor is a skull,
-      legible from a single viewpoint well off to the side. View-dependent effects have been a problem for some time.
-      <span class="hint">Hover, or tap, to stand where Holbein meant you to.</span>
+      William Hogarth, <span class="work">Satire on False Perspective</span>, 1754. My research, in one picture: what not to do.
     </figcaption>
   </figure>
 
@@ -140,20 +127,10 @@
   </section>
 
   <footer>
-    Image: Hans Holbein the Younger, <i>The Ambassadors</i>, 1533, National Gallery, London (public domain, via Wikimedia Commons).
+    Image: William Hogarth, <i>Satire on False Perspective</i>, 1754, engraved by Luke Sullivan. The Metropolitan Museum of Art (CC0).
   </footer>
 
 </main>
-<script>
-  // hover on a mouse; tap or keyboard elsewhere
-  const frame = document.getElementById('frame');
-  const set = on => { frame.classList.toggle('turned', on); frame.setAttribute('aria-pressed', on); };
-  let mouse = false;
-  frame.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') { mouse = true; set(true); } });
-  frame.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') set(false); });
-  frame.addEventListener('click', () => { if (!mouse) set(!frame.classList.contains('turned')); });
-  frame.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); set(!frame.classList.contains('turned')); } });
-</script>
 
 </body>
 </html>
