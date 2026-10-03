@@ -46,6 +46,13 @@
     header h1 { font-weight: 400; font-size: 40px; line-height: 1.1; margin: 0 0 6px; letter-spacing: -.01em; }
     header .affil { color: var(--ink-2); margin: 0; }
     header .links { margin: 10px 0 0; color: var(--ink-3); font-size: 17px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    header .who { min-width: 0; }
+    header .photo { width: 150px; height: 150px; flex: 0 0 auto; border-radius: 6px; object-fit: cover; display: block; }
+    @media (max-width: 520px) {
+      header { flex-direction: column-reverse; align-items: flex-start; gap: 18px; }
+      header .photo { width: 120px; height: 120px; }
+    }
 
     figure { margin: 48px auto 44px; max-width: 560px; }
     figure img { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; mix-blend-mode: multiply; }
@@ -71,13 +78,16 @@
 <main>
 
   <header>
-    <h1>Mayurdeep Pathak</h1>
-    <p class="affil">Indian Institute of Science, Bangalore</p>
-    <p class="links">
-      <a href="mailto:mayurdeepp@iisc.ac.in">Email</a> ·
-      <a href="https://www.linkedin.com/in/mayurdeep-pathak-47a01b89/">LinkedIn</a> ·
-      <a href="https://github.com/mayurdeep">GitHub</a>
-    </p>
+    <div class="who">
+      <h1>Mayurdeep Pathak</h1>
+      <p class="affil">Indian Institute of Science, Bangalore</p>
+      <p class="links">
+        <a href="mailto:mayurdeepp@iisc.ac.in">Email</a> ·
+        <a href="https://www.linkedin.com/in/mayurdeep-pathak-47a01b89/">LinkedIn</a> ·
+        <a href="https://github.com/mayurdeep">GitHub</a>
+      </p>
+    </div>
+    <img class="photo" src="assets/mayurdeep.jpg" alt="Mayurdeep Pathak" width="420" height="420">
   </header>
 
   <figure>
