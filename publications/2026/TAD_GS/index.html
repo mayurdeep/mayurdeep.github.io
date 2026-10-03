@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="TAD-GS addresses limitations in dynamic 3D Gaussian Splatting by introducing Visibility-Aware Densification, Temporally-Adaptive Thresholding, and Temporal Offset Warping for improved dynamic scene reconstruction.">
+  <meta name="keywords" content="Gaussian Splatting, 3DGS, Novel View Synthesis">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TAD-GS: Temporally Aware Densification for Dynamic 3D Gaussian Splatting</title>
+
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+  <script src="./static/js/video_comparison.js"></script>
+</head>
+<body>
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-start" style="flex-grow: 1; justify-content: center;">
+      <a class="navbar-item" href="../../../" title="Mayurdeep Pathak">
+        <span class="icon">
+          <i class="fas fa-home"></i>
+        </span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-widescreen">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <h1 class="title is-1 publication-title">TAD-GS: Temporally Aware Densification for Dynamic 3D Gaussian Splatting</h1>
+          <span style="display:inline-block; margin-top:0.6rem; padding:0.35rem 1.2rem; background:linear-gradient(135deg,#4a90d9,#2c6fbe); color:#fff; border-radius:20px; font-family:'Google Sans',sans-serif; font-size:1rem; font-weight:600; letter-spacing:0.08em;">ECCV 2026</span>
+          <div class="is-size-5 publication-authors" style="margin-top: 1rem;">
+            <span class="author-block">
+              <a href="#">Vikram Sandu</a>,</span>
+            <span class="author-block">
+              <a href="../../../">Mayurdeep Pathak</a>,</span>
+            <span class="author-block">
+              <a href="#">Rajiv Soundararajan</a>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">Indian Institute of Science, Bengaluru, India</span>
+          </div>
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href="./static/paper/TAD_GS_main.pdf"
+                   class="external-link button is-normal is-rounded is-dark" target="_blank">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <span class="link-block">
+                <a href="https://arxiv.org/abs/2606.23212"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/vikramsandu/TAD-GS"
+                   class="external-link button is-normal is-rounded is-dark" target="_blank">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="hero teaser">
+  <div class="container is-max-widescreen">
+    <div class="hero-body">
+
+      <!-- Hidden videos -->
+      <div style="overflow:hidden; height:0; position:absolute;">
+        <video id="painterA" autoplay muted loop playsinline preload="auto">
+          <source src="./static/videos/videos/Painter/standard_3dgs.mp4" type="video/mp4">
+        </video>
+        <video id="painterB" autoplay muted loop playsinline preload="auto">
+          <source src="./static/videos/videos/Painter/tadgs.mp4" type="video/mp4">
+        </video>
+        <video id="trainA" autoplay muted loop playsinline preload="auto">
+          <source src="./static/videos/videos/Train/standard_3dgs.mp4" type="video/mp4">
+        </video>
+        <video id="trainB" autoplay muted loop playsinline preload="auto">
+          <source src="./static/videos/videos/Train/tadgs.mp4" type="video/mp4">
+        </video>
+        <video id="basketballA" autoplay muted loop playsinline preload="auto">
+          <source src="./static/videos/videos/Basketball/standard_3dgs.mp4" type="video/mp4">
+        </video>
+        <video id="basketballB" autoplay muted loop playsinline preload="auto">
+          <source src="./static/videos/videos/Basketball/tadgs.mp4" type="video/mp4">
+        </video>
+        <video id="cookspinachA" autoplay muted loop playsinline preload="auto">
+          <source src="./static/videos/videos/cook%20spinach/standard_3dgs.mp4" type="video/mp4">
+        </video>
+        <video id="cookspinachB" autoplay muted loop playsinline preload="auto">
+          <source src="./static/videos/videos/cook%20spinach/tadgs.mp4" type="video/mp4">
+        </video>
+      </div>
+
+      <!-- Scene Tabs -->
+      <div class="teaser-tabs" id="teaser-scene-tabs">
+        <button class="teaser-tab is-active" data-target="cookspinachCanvas"><i class="fas fa-utensils"></i>&nbsp; Cook Spinach</button>
+        <button class="teaser-tab" data-target="trainCanvas"><i class="fas fa-train"></i>&nbsp; Train</button>
+        <button class="teaser-tab" data-target="basketballCanvas"><i class="fas fa-basketball-ball"></i>&nbsp; Basketball</button>
+        <button class="teaser-tab" data-target="painterCanvas"><i class="fas fa-palette"></i>&nbsp; Painter</button>
+      </div>
+
+      <!-- Canvas -->
+      <div class="teaser-canvas-wrap" style="position:relative;">
+        <canvas id="cookspinachCanvas" style="width:100%; display:block; cursor:col-resize;"></canvas>
+        <canvas id="trainCanvas"       style="width:100%; display:none;  cursor:col-resize;"></canvas>
+        <canvas id="basketballCanvas"  style="width:100%; display:none;  cursor:col-resize;"></canvas>
+        <canvas id="painterCanvas"     style="width:100%; display:none;  cursor:col-resize;"></canvas>
+        <button class="video-overlay-btn" id="teaser-pause-btn" title="Pause/Play"><i class="fas fa-pause"></i></button>
+      </div>
+
+      <h2 class="subtitle has-text-centered" style="margin-top:1rem; font-size:1rem;">
+        Existing 3DGS densification fails to refine short-lived dynamic Gaussians, resulting in blurry reconstructions. <strong>TAD-GS</strong> recovers highly dynamic regions. Move the cursor over video to compare.
+      </h2>
+
+    </div>
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    initVideoComparison('trainCanvas',      'trainA',      'trainB');
+    initVideoComparison('painterCanvas',    'painterA',    'painterB');
+    initVideoComparison('basketballCanvas', 'basketballA', 'basketballB');
+    initVideoComparison('cookspinachCanvas', 'cookspinachA', 'cookspinachB', { vAnchor: 'bottom' });
+
+    var canvases = ['cookspinachCanvas', 'trainCanvas', 'basketballCanvas', 'painterCanvas'];
+    document.querySelectorAll('#teaser-scene-tabs .teaser-tab').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        document.querySelectorAll('#teaser-scene-tabs .teaser-tab').forEach(function(t) { t.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+        var target = tab.dataset.target;
+        canvases.forEach(function(id) {
+          document.getElementById(id).style.display = (id === target) ? 'block' : 'none';
+        });
+      });
+    });
+  });
+</script>
+
+
+<section class="section">
+  <div class="container is-max-widescreen">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Despite modeling temporal motion, dynamic 3D Gaussian Splatting (3DGS) methods still inherit a static densification strategy ill-suited for dynamic scenes. This neglect of temporal behavior leads to under-reconstructed and blurry dynamic regions, as short-lived Gaussians receive sparse supervision and fail to densify effectively.
+          </p>
+          <p>
+            We propose a <em>Visibility-Aware Densification</em> (VAD) framework that integrates temporal visibility into the densification process, ensuring that Gaussians are refined based on their actual temporal presence. A <em>Temporally-Adaptive Thresholding</em> (TAT) mechanism further adjusts each Gaussian’s densification threshold according to its temporal lifespan, promoting balanced refinement of both static and dynamic regions. Finally, a <em>Temporal Offset Warping</em> (TOW) design enhances deformation capacity around temporal centers, extending the lifespan of highly dynamic Gaussians and facilitating more effective densification.
+          </p>
+          <p>
+            Our approach achieves substantial improvements in the visual quality of dynamic regions, outperforming existing methods across three dynamic multi-view benchmark datasets. Moreover, the proposed VAD module generalizes across diverse dynamic 3DGS methods, consistently improving dynamic reconstruction as a plug-and-play component.
+          </p>
+        </div>
+      </div>
+    </div>
+    <!--/ Abstract. -->
+
+    <!-- Method Overview. -->
+    <div class="columns is-centered" style="margin-top: 3rem;">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3 has-text-centered">Method Overview</h2>
+        <figure style="margin: 0;">
+          <img src="./static/images/method_overview.png"
+               alt="TAD-GS method overview diagram"
+               style="width:100%; display:block; border-radius: 8px; mix-blend-mode: multiply;">
+          <figcaption style="margin-top: 1rem; font-size: 1rem; color: #555; line-height: 1.7; text-align: justify;">
+            <strong>Overview of our proposed densification framework.</strong>
+            <strong>(A)</strong> Temporal Offset Warping adaptively warps the input time around each Gaussian's temporal center, stretching regions near the center and compressing those farther away.
+            <strong>(B)</strong> We accumulate the visibility weighted gradient signal for the <em>N</em> densification frames.
+            <strong>(C)</strong> We dynamically adjust the densification threshold based on temporal scale &psi; averaged over the <em>N</em> densification frames.
+            <strong>(D)</strong> A Gaussian is densified when its visibility-weighted gradient accumulation exceeds the temporally adaptive threshold.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+    <!--/ Method Overview. -->
+
+  </div>
+</section>
+
+
+<section class="section" id="results" style="padding-top: 1rem;">
+  <div class="container is-max-widescreen">
+    <h2 class="title is-3 has-text-centered">Results</h2>
+
+    <!-- Comparisons -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h3 class="title is-4" style="margin-bottom: 1rem;">Comparisons</h3>
+
+        <div class="teaser-tabs" style="flex-wrap: wrap;">
+          <button class="teaser-tab is-active" data-scene="Train"><i class="fas fa-train"></i>&nbsp; Train</button>
+          <button class="teaser-tab" data-scene="Painter"><i class="fas fa-palette"></i>&nbsp; Painter</button>
+          <button class="teaser-tab" data-scene="flame_salmon"><i class="fas fa-fish"></i>&nbsp; Flame Salmon</button>
+          <button class="teaser-tab" data-scene="Basketball"><i class="fas fa-basketball-ball"></i>&nbsp; Basketball</button>
+          <button class="teaser-tab" data-scene="sear_steak"><i class="fas fa-fire"></i>&nbsp; Sear Steak</button>
+        </div>
+
+        <div class="teaser-canvas-wrap" style="position:relative;">
+          <video id="comp-video" autoplay muted loop playsinline preload="auto"
+                 src="./static/videos/comparison/Train.mp4"
+                 style="width:100%; display:block;"></video>
+          <button class="video-overlay-btn" id="comp-pause-btn" title="Pause/Play"><i class="fas fa-pause"></i></button>
+        </div>
+
+        <p class="has-text-centered" style="margin-top: 0.9rem; font-size: 1rem; color: #555; line-height: 1.65;">
+          TAD-GS consistently produces sharper reconstructions of dynamic regions compared to existing methods.
+        </p>
+      </div>
+    </div>
+
+    <!-- Generalization of VAD -->
+    <div class="columns is-centered" style="margin-top: 3.5rem;" id="vad-section">
+      <div class="column is-full-width">
+        <h3 class="title is-4" style="margin-bottom: 1rem;">Generalization of VAD</h3>
+
+        <div class="teaser-tabs" style="flex-wrap: wrap;">
+          <button class="teaser-tab is-active" data-vad="STG">STG</button>
+          <button class="teaser-tab" data-vad="swift4d">Swift4D</button>
+          <button class="teaser-tab" data-vad="Ex4DGS">Ex4DGS</button>
+        </div>
+
+        <div class="teaser-canvas-wrap" style="position:relative;">
+          <video id="vad-video" autoplay muted loop playsinline preload="auto"
+                 src="./static/videos/vad/STG.mp4"
+                 style="width:100%; display:block;"></video>
+          <button class="video-overlay-btn" id="vad-pause-btn" title="Pause/Play"><i class="fas fa-pause"></i></button>
+        </div>
+
+        <p class="has-text-centered" style="margin-top: 0.9rem; font-size: 1rem; color: #555; line-height: 1.65;">
+          The plug-and-play VAD module consistently improves dynamic reconstruction across existing baselines.
+        </p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Comparison tabs
+    var compVideo = document.getElementById('comp-video');
+    var compPauseBtn = document.getElementById('comp-pause-btn');
+    var compSection = document.getElementById('results');
+    compSection.querySelectorAll('.teaser-tab[data-scene]').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        compSection.querySelectorAll('.teaser-tab[data-scene]').forEach(function(t) { t.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+        compVideo.src = './static/videos/comparison/' + tab.dataset.scene + '.mp4';
+        compVideo.load();
+        compVideo.play();
+        compPauseBtn.querySelector('i').className = 'fas fa-pause';
+      });
+    });
+    function toggleComp() {
+      if (compVideo.paused) { compVideo.play(); compPauseBtn.querySelector('i').className = 'fas fa-pause'; }
+      else { compVideo.pause(); compPauseBtn.querySelector('i').className = 'fas fa-play'; }
+    }
+    compPauseBtn.addEventListener('click', toggleComp);
+    compVideo.addEventListener('click', toggleComp);
+
+    // VAD tabs
+    var vadVideo = document.getElementById('vad-video');
+    var vadPauseBtn = document.getElementById('vad-pause-btn');
+    var vadSection = document.getElementById('vad-section');
+    vadSection.querySelectorAll('.teaser-tab[data-vad]').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        vadSection.querySelectorAll('.teaser-tab[data-vad]').forEach(function(t) { t.classList.remove('is-active'); });
+        tab.classList.add('is-active');
+        vadVideo.src = './static/videos/vad/' + tab.dataset.vad + '.mp4';
+        vadVideo.load();
+        vadVideo.play();
+        vadPauseBtn.querySelector('i').className = 'fas fa-pause';
+      });
+    });
+    function toggleVad() {
+      if (vadVideo.paused) { vadVideo.play(); vadPauseBtn.querySelector('i').className = 'fas fa-pause'; }
+      else { vadVideo.pause(); vadPauseBtn.querySelector('i').className = 'fas fa-play'; }
+    }
+    vadPauseBtn.addEventListener('click', toggleVad);
+    vadVideo.addEventListener('click', toggleVad);
+
+    // Teaser pause button (pauses all underlying video pairs)
+    var teaserPauseBtn = document.getElementById('teaser-pause-btn');
+    var teaserPaused = false;
+    var teaserVideoIds = ['trainA','trainB','painterA','painterB','basketballA','basketballB','cookspinachA','cookspinachB'];
+    function toggleTeaser() {
+      teaserPaused = !teaserPaused;
+      teaserVideoIds.forEach(function(id) {
+        var v = document.getElementById(id);
+        if (v) { teaserPaused ? v.pause() : v.play(); }
+      });
+      teaserPauseBtn.querySelector('i').className = teaserPaused ? 'fas fa-play' : 'fas fa-pause';
+    }
+    teaserPauseBtn.addEventListener('click', function(e) { e.stopPropagation(); toggleTeaser(); });
+    document.querySelector('.teaser-canvas-wrap').addEventListener('click', toggleTeaser);
+  });
+</script>
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-widescreen content">
+    <h2 class="title">BibTeX</h2>
+    <pre><code>@article{sandu2026tadgs,
+  author    = {Sandu, Vikram and Pathak, Mayurdeep and Soundararajan, Rajiv},
+  title     = {Temporally Aware Densification for Dynamic 3D Gaussian Splatting},
+  journal   = {ECCV},
+  year      = {2026},
+}</code></pre>
+  </div>
+</section>
+
+
+<section class="section" id="References">
+  <div class="container is-max-widescreen content">
+    <h2 class="title">References</h2>
+    <div class="content has-text-justified">
+      <ul>
+        <li>
+          <a href="https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/" target="_blank">3D Gaussian Splatting for Real-Time Radiance Field Rendering</a>
+          — Kerbl et al., SIGGRAPH 2023
+        </li>
+        <li>
+          <a href="https://oppo-us-research.github.io/SpacetimeGaussians-website/" target="_blank">Spacetime Gaussian Feature Splatting for Real-Time Dynamic View Synthesis</a>
+          — Li et al., CVPR 2024
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content has-text-centered">
+          <p>
+            This website is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+            This webpage template is from <a href="https://github.com/nerfies/nerfies.github.io" target="_blank">Nerfies</a>.
+            We sincerely thank <a href="https://keunhong.com/" target="_blank">Keunhong Park</a> for developing and open-sourcing this template.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
