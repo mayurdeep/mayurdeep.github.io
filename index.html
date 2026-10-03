@@ -17,18 +17,19 @@
       --ink-3: #8b867d;
       --rule: #e4dfd5;
       --link: #8a3b24;
+      --card: #ffffff;
       color-scheme: light;
     }
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
         --bg: #151412; --ink: #ece8e1; --ink-2: #b3ada3; --ink-3: #7f7a71; --rule: #2b2925;
-        --link: #e0a089;
+        --link: #e0a089; --card: #1c1b18;
         color-scheme: dark;
       }
     }
     :root[data-theme="dark"] {
       --bg: #151412; --ink: #ece8e1; --ink-2: #b3ada3; --ink-3: #7f7a71; --rule: #2b2925;
-      --link: #e0a089;
+      --link: #e0a089; --card: #1c1b18;
       color-scheme: dark;
     }
 
@@ -64,12 +65,21 @@
     p { margin: 0 0 16px; }
     .quiet { color: var(--ink-2); }
 
-    .pubs { list-style: none; margin: 0; padding: 0; }
-    .pubs li { margin: 0 0 22px; }
-    .pubs .t { display: block; }
-    .pubs .a, .pubs .v { display: block; font-size: 16.5px; color: var(--ink-2); }
-    .pubs .me { color: var(--ink); }
-    .pubs .v i { color: var(--ink-3); }
+    .pubs { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+    .pubs li {
+      background: var(--card); border: 1px solid var(--rule); border-left: 3px solid var(--link);
+      border-radius: 8px; padding: 18px 20px; display: grid; gap: 6px;
+    }
+    .pubs .t { font-size: 19px; line-height: 1.35; font-weight: 500; }
+    .pubs .a { font-size: 16.5px; color: var(--ink-2); }
+    .pubs .me { color: var(--ink); font-weight: 600; }
+    .pubs .v { font-size: 16px; color: var(--ink-3); font-style: italic; }
+    .pubs .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+    .pubs .chips a {
+      font-size: 14.5px; padding: 3px 12px; border: 1px solid var(--rule); border-radius: 6px;
+      background: var(--bg); text-decoration: none;
+    }
+    .pubs .chips a:hover { border-color: var(--link); text-decoration: none; }
 
     footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 14.5px; color: var(--ink-3); }
   </style>
@@ -133,17 +143,19 @@
       <li>
         <a class="t" href="publications/2026/LongDurationVideos/">Sustaining Reconstruction Quality in Long-Duration Dynamic 3D Gaussian Splatting</a>
         <span class="a"><span class="me">Mayurdeep Pathak</span>, Vikram Sandu, Rajiv Soundararajan</span>
-        <span class="v"><a href="publications/2026/LongDurationVideos/">Project page</a></span>
+        <span class="chips"><a href="publications/2026/LongDurationVideos/">Project page</a></span>
       </li>
       <li>
         <a class="t" href="publications/2026/TAD_GS/">Temporally Aware Densification for Dynamic 3D Gaussian Splatting</a>
         <span class="a">Vikram Sandu, <span class="me">Mayurdeep Pathak</span>, Rajiv Soundararajan</span>
-        <span class="v"><i>ECCV 2026</i> · <a href="publications/2026/TAD_GS/">Project page</a> · <a href="https://arxiv.org/abs/2606.23212">arXiv</a></span>
+        <span class="v">European Conference on Computer Vision (ECCV), 2026</span>
+        <span class="chips"><a href="publications/2026/TAD_GS/">Project page</a><a href="https://arxiv.org/abs/2606.23212">arXiv</a></span>
       </li>
       <li>
         <a class="t" href="https://ieeexplore.ieee.org/iel8/10605128/10605229/10605484.pdf">GlobeMetrics: A Healthcare Framework for Video Based Saccade Characterization</a>
         <span class="a">Debanga Raj Neog, Pharvesh Salman Choudhary, <span class="me">Mayurdeep Pathak</span></span>
-        <span class="v"><i>IEEE CAI 2024</i></span>
+        <span class="v">IEEE Conference on Artificial Intelligence (CAI), 2024</span>
+        <span class="chips"><a href="https://ieeexplore.ieee.org/iel8/10605128/10605229/10605484.pdf">Paper</a></span>
       </li>
     </ul>
   </section>
