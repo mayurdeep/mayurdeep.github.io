@@ -43,7 +43,7 @@
       font-optical-sizing: auto;
       -webkit-font-smoothing: antialiased;
     }
-    main { max-width: 680px; margin: 0 auto; padding: 72px 16px 56px; }
+    main { max-width: 1080px; margin: 0 auto; padding: 72px 16px 56px; }
     a { color: var(--link); text-decoration: none; }
     a:hover { text-decoration: underline; text-underline-offset: 3px; }
 
@@ -82,11 +82,18 @@
     .news { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
     .news li { display: grid; grid-template-columns: 92px 1fr; gap: 12px; }
     .news .d { color: var(--ink-3); font-size: 16.5px; padding-top: 1px; }
-    .video { position: relative; width: 100%; aspect-ratio: 16 / 9; margin-top: 12px; border-radius: 8px; overflow: hidden; border: 1px solid var(--rule); }
+    .video { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; border: 1px solid var(--rule); }
     .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
     @media (max-width: 520px) { .news li { grid-template-columns: 1fr; gap: 2px; } }
 
-    header + section { margin-top: 36px; }
+    header + .intro { margin-top: 36px; }
+    .intro { display: grid; grid-template-columns: minmax(0, 1fr); gap: 28px; }
+    .talk figcaption { margin-top: 10px; font-size: 15.5px; line-height: 1.5; color: var(--ink-3); }
+    .talk { margin: 0; }
+    @media (min-width: 900px) {
+      .intro { grid-template-columns: minmax(0, 1fr) 440px; gap: 48px; align-items: start; }
+      .talk { position: sticky; top: 32px; margin-top: 6px; }
+    }
   </style>
 </head>
 <body>
@@ -107,33 +114,41 @@
   </header>
 
 
-  <section>
-    <p>
-      I did my M.Tech (Research) at the Indian Institute of Science (IISc) in Bangalore, from 2023 to 2026.
-      I was advised by Prof. Rajiv Soundararajan in the Visual Information Processing Lab. I work on 3D
-      reconstruction of scenes that move. I build 3D models from videos taken by several cameras, so the scene
-      can be seen from new viewpoints. I focus on keeping the moving parts sharp, even in long videos.
-    </p>
-    <p>
-      I grew up in Dibrugarh, Assam, a small town in the northeastern part of India known for its tea. Before IISc, I did my Bachelor of Engineering (B.E.) in Computer Science
-      and Engineering at Jorhat Engineering College. At IISc, I also served as Secretary of the IISc ACM
-      Student Chapter.
-    </p>
-    <p>
-      I love movies and filmmaking, and they are a big part of why I like 3D vision. Many films today are made by
-      capturing real places and people in 3D and rendering them again. One thing I like to share is
-      <a href="https://www.pauldebevec.com/Campanile/"><i>The Campanile Movie</i></a>. Paul Debevec made this
-      short film in 1997 from just a few photos of a clock tower, long before NeRFs and Gaussian splats.
-    </p>
-    <p>
-      Outside of work, I enjoy travelling, motorbiking and cooking (I am a fairly good cook).
-    </p>
-    <p>
-      I am currently looking for PhD and research positions in 3D vision and graphics. I am always happy to talk about 3D vision, films, or anything else, so feel free to reach out on
-      <a href="https://www.linkedin.com/in/mayurdeep-pathak-47a01b89/">LinkedIn</a> or by
-      <a href="mailto:mayurdeepp@iisc.ac.in">email</a>.
-    </p>
-  </section>
+  <div class="intro">
+    <section>
+      <p>
+        I did my M.Tech (Research) at the Indian Institute of Science (IISc) in Bangalore, from 2023 to 2026.
+        I was advised by Prof. Rajiv Soundararajan in the Visual Information Processing Lab. I work on 3D
+        reconstruction of scenes that move. I build 3D models from videos taken by several cameras, so the scene
+        can be seen from new viewpoints. I focus on keeping the moving parts sharp, even in long videos.
+      </p>
+      <p>
+        I grew up in Dibrugarh, Assam, a small town in the northeastern part of India known for its tea. Before IISc, I did my Bachelor of Engineering (B.E.) in Computer Science
+        and Engineering at Jorhat Engineering College. At IISc, I also served as Secretary of the IISc ACM
+        Student Chapter.
+      </p>
+      <p>
+        I love movies and filmmaking, and they are a big part of why I like 3D vision. Many films today are made by
+        capturing real places and people in 3D and rendering them again. One thing I like to share is
+        <a href="https://www.pauldebevec.com/Campanile/"><i>The Campanile Movie</i></a>. Paul Debevec made this
+        short film in 1997 from just a few photos of a clock tower, long before NeRFs and Gaussian splats.
+      </p>
+      <p>
+        Outside of work, I enjoy travelling, motorbiking and cooking (I am a fairly good cook).
+      </p>
+      <p>
+        I am currently looking for PhD and research positions in 3D vision and graphics. I am always happy to talk about 3D vision, films, or anything else, so feel free to reach out on
+        <a href="https://www.linkedin.com/in/mayurdeep-pathak-47a01b89/">LinkedIn</a> or by
+        <a href="mailto:mayurdeepp@iisc.ac.in">email</a>.
+      </p>
+    </section>
+    <figure class="talk" id="talk">
+      <div class="video">
+        <iframe src="https://www.youtube.com/embed/Tx34t9YAxKE?si=IicxkVIHozdZKml-" title="Densification Strategies for Dynamic 3D Gaussian Splatting" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      </div>
+      <figcaption>My colloquium talk on <i>Densification Strategies for Dynamic 3D Gaussian Splatting</i>, October 2026.</figcaption>
+    </figure>
+  </div>
 
   <section>
     <h2>News</h2>
@@ -141,10 +156,13 @@
       <li>
         <span class="d">Oct 2026</span>
         <div>
-          I gave a colloquium talk on <i>Densification Strategies for Dynamic 3D Gaussian Splatting</i>. The recording is below.
-          <div class="video">
-            <iframe src="https://www.youtube.com/embed/Tx34t9YAxKE?si=IicxkVIHozdZKml-" title="Densification Strategies for Dynamic 3D Gaussian Splatting" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-          </div>
+          I gave a colloquium talk on <i>Densification Strategies for Dynamic 3D Gaussian Splatting</i>. You can <a href="#talk">watch the recording</a>.
+        </div>
+      </li>
+      <li>
+        <span class="d">Sep 2026</span>
+        <div>
+          Our paper <a href="publications/2026/TAD_GS/"><i>Temporally Aware Densification for Dynamic 3D Gaussian Splatting</i></a> was published at ECCV 2026.
         </div>
       </li>
     </ul>
