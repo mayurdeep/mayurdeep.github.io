@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mayurdeep Pathak</title>
   <meta name="description" content="Mayurdeep Pathak, Indian Institute of Science. Dynamic scene reconstruction and novel view synthesis.">
-  <meta property="og:image" content="https://mayurdeep.github.io/assets/false-perspective.jpg">
+  <meta property="og:image" content="https://mayurdeep.github.io/assets/mayurdeep.jpg">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="assets/favicon-32.png" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
@@ -58,11 +58,6 @@
       header .photo { width: 120px; height: 120px; }
     }
 
-    figure { margin: 48px auto 44px; max-width: 560px; }
-    figure img { display: block; width: 100%; max-width: 560px; height: auto; margin: 0 auto; mix-blend-mode: multiply; }
-    @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) figure img { mix-blend-mode: normal; } }
-    figcaption { margin-top: 12px; font-size: 15.5px; line-height: 1.5; color: var(--ink-3); font-style: italic; }
-    figcaption .work { font-style: normal; }
 
     h2 { font-weight: 400; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin: 52px 0 18px; }
     p { margin: 0 0 16px; }
@@ -84,7 +79,14 @@
     }
     .pubs .chips a:hover { border-color: var(--link); text-decoration: none; }
 
-    footer { margin-top: 64px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 14.5px; color: var(--ink-3); }
+    .news { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+    .news li { display: grid; grid-template-columns: 92px 1fr; gap: 12px; }
+    .news .d { color: var(--ink-3); font-size: 16.5px; padding-top: 1px; }
+    .video { position: relative; width: 100%; aspect-ratio: 16 / 9; margin-top: 12px; border-radius: 8px; overflow: hidden; border: 1px solid var(--rule); }
+    .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    @media (max-width: 520px) { .news li { grid-template-columns: 1fr; gap: 2px; } }
+
+    header + section { margin-top: 36px; }
   </style>
 </head>
 <body>
@@ -104,13 +106,6 @@
     <img class="photo" src="assets/mayurdeep.jpg" alt="Mayurdeep Pathak" width="420" height="420">
   </header>
 
-  <figure>
-    <img src="assets/false-perspective.jpg" width="1120" height="1466"
-         alt="Hogarth's engraving of a landscape full of impossible perspective: a man on a distant hill lights his pipe from a candle held out of a nearby window, and fishing lines cross between the foreground and the far bank">
-    <figcaption>
-      William Hogarth, <span class="work">Satire on False Perspective</span>, 1754. Hogarth drew the world without perspective. I work on putting it back.
-    </figcaption>
-  </figure>
 
   <section>
     <p>
@@ -141,6 +136,21 @@
   </section>
 
   <section>
+    <h2>News</h2>
+    <ul class="news">
+      <li>
+        <span class="d">Oct 2026</span>
+        <div>
+          I gave a colloquium talk on <i>Densification Strategies for Dynamic 3D Gaussian Splatting</i>. The recording is below.
+          <div class="video">
+            <iframe src="https://www.youtube.com/embed/Tx34t9YAxKE?si=IicxkVIHozdZKml-" title="Densification Strategies for Dynamic 3D Gaussian Splatting" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <section>
     <h2>Projects and Publications</h2>
     <ul class="pubs">
       <li>
@@ -164,10 +174,6 @@
     </ul>
   </section>
 
-  <footer>
-    The image is William Hogarth's <i>Satire on False Perspective</i> (1754), engraved by Luke Sullivan,
-    from The Metropolitan Museum of Art (CC0).
-  </footer>
 
 </main>
 
