@@ -2862,16 +2862,29 @@ window.GHDB=(function(){
     })(MM.root,null,0,MMC[0]);
     return out;
   }
+  /* ideas can change size after they are drawn (the handwriting font arrives late, a phone rotates).
+     When any idea's real size no longer matches the size the layout used, lay the map out again. */
+  function mmRecheck(){
+    if(MM.roPend) return;
+    MM.roPend=requestAnimationFrame(()=>{
+      MM.roPend=0; if(!MM.root||!MM.els.size) return;
+      if(!MM.L){if(MM.needLay)mmLayout(false);return}
+      for(const [id,el] of MM.els){const s=MM.L.get(id), w=el.offsetWidth, h=el.offsetHeight;
+        if(s&&w&&(Math.abs(w-s.w)>.5||Math.abs(h-s.h)>.5)){mmLayout(false);return}}
+    });
+  }
+  const mmRO=('ResizeObserver' in window)?new ResizeObserver(mmRecheck):null;
+  if(document.fonts){document.fonts.addEventListener&&document.fonts.addEventListener('loadingdone',mmRecheck);document.fonts.ready&&document.fonts.ready.then(mmRecheck)}
   function mmRender(anim){
     const ids=mmVisible(), seen=new Set(ids);
-    for(const [id,el] of MM.els) if(!seen.has(id)){el.remove();MM.els.delete(id)}
+    for(const [id,el] of MM.els) if(!seen.has(id)){if(mmRO)mmRO.unobserve(el);el.remove();MM.els.delete(id)}
     for(const id of ids){
       const m=MM.meta.get(id), n=m.n;
       let el=MM.els.get(id);
       if(!el){
         el=document.createElement('div'); el.className='mmn'; el.dataset.id=id;
         el.innerHTML='<span class="mmn-ic"></span><span class="mmn-t"></span><span class="mmn-meta"></span><button class="mmn-tog" type="button" tabindex="-1"></button>';
-        mmNodes.appendChild(el); MM.els.set(id,el);
+        mmNodes.appendChild(el); MM.els.set(id,el); if(mmRO) mmRO.observe(el,{box:'border-box'});
       }
       el.className='mmn '+(m.d===0?'d0':m.d===1?'d1':'dn')+(n.b?' bold':'')+(n.x&&(n.c||[]).length?' col':'')+(MM.sel===id?' sel':'')+(MM.edit===id?' editing':'');
       el.style.setProperty('--br',m.d===0?(n.col!=null?MMC[n.col%MMC.length]:'var(--mm-ink)'):m.br);
@@ -2893,25 +2906,27 @@ window.GHDB=(function(){
   function mmLayout(anim){
     const L=new Map();
     for(const [id,el] of MM.els) L.set(id,{w:el.offsetWidth,h:el.offsetHeight});
-    const HG=d=>d===0?64:d===1?44:34, VG=d=>d===0?20:d===1?14:8;
-    function size(n,d){
-      const s=L.get(n.id); if(!s) return 0;
-      const kids=n.x?[]:(n.c||[]).filter(c=>L.has(c.id));
-      if(!kids.length){s.sub=s.h;return s.sub}
-      let t=0; kids.forEach((c,i)=>{t+=size(c,d+1)+(i?VG(d):0)}); s.kidsH=t; s.sub=Math.max(s.h,t); return s.sub;
+    /* the page is not showing (outline view, closed book): sizes read as zero, so wait and lay out once it shows */
+    if(MM.els.size&&[...L.values()].some(s=>!s.w||!s.h)){MM.L=null;MM.needLay=true;return}
+    MM.needLay=false;
+    const HG=d=>d===0?64:d===1?44:34, VG=d=>d===0?30:d===1?20:14;
+    const vis=n=>n.x?[]:(n.c||[]).filter(c=>L.has(c.id));
+    /* each branch is laid out around its own line point (anchor), then whole branches are stacked
+       using their true top and bottom, so a branch can never spill into its neighbour */
+    function lay(n,d){
+      const s=L.get(n.id), ao=d>=2?s.h:s.h/2, kids=vis(n);
+      if(!kids.length) return {top:-ao,bot:s.h-ao,list:[[n.id,-ao]]};
+      const res=kids.map(k=>lay(k,d+1)), anchors=[]; let prevBot=0;
+      res.forEach((r,i)=>{const a=i===0?0:prevBot+VG(d)-r.top;anchors.push(a);prevBot=a+r.bot});
+      const pa=(anchors[0]+anchors[anchors.length-1])/2;
+      let list=[[n.id,pa-ao]], top=pa-ao, bot=pa-ao+s.h;
+      res.forEach((r,i)=>{r.list.forEach(([id,y])=>list.push([id,y+anchors[i]]));top=Math.min(top,anchors[i]+r.top);bot=Math.max(bot,anchors[i]+r.bot)});
+      list=list.map(([id,y])=>[id,y-pa]);
+      return {top:top-pa,bot:bot-pa,list};
     }
-    function place(n,d,x,top){
-      const s=L.get(n.id); s.x=x;
-      const kids=n.x?[]:(n.c||[]).filter(c=>L.has(c.id));
-      if(!kids.length){s.y=top+(s.sub-s.h)/2;return}
-      let y=top+(s.sub-s.kidsH)/2; const cx=x+s.w+HG(d);
-      kids.forEach(c=>{place(c,d+1,cx,y);y+=L.get(c.id).sub+VG(d)});
-      const a=L.get(kids[0].id), b=L.get(kids[kids.length-1].id);
-      const ac=MM.meta.get(kids[0].id).d>=2?a.y+a.h:a.y+a.h/2, bc=MM.meta.get(kids[kids.length-1].id).d>=2?b.y+b.h:b.y+b.h/2;
-      s.y=(ac+bc)/2-s.h/2;
-    }
-    size(MM.root,0); place(MM.root,0,0,-L.get(MM.root.id).sub/2);
-    const r=L.get(MM.root.id), dy=-(r.y+r.h/2); for(const s of L.values()) s.y+=dy;
+    function xs(n,d,x){const s=L.get(n.id);s.x=x;vis(n).forEach(c=>xs(c,d+1,x+s.w+HG(d)))}
+    xs(MM.root,0,0);
+    lay(MM.root,0).list.forEach(([id,y])=>{L.get(id).y=y});
     MM.L=L;
     if(MM.tween) cancelAnimationFrame(MM.tween);
     const from=new Map();
@@ -2925,7 +2940,7 @@ window.GHDB=(function(){
       const k=dur?Math.min(1,(now-t0)/dur):1, e=ease(k), cur=new Map();
       for(const [id,s] of L){const f=from.get(id);cur.set(id,{x:f.x+(s.x-f.x)*e,y:f.y+(s.y-f.y)*e,w:s.w,h:s.h})}
       mmPaint(cur);
-      if(k<1) MM.tween=requestAnimationFrame(step); else {MM.tween=null;MM.pos=new Map([...L].map(([id,s])=>[id,{x:s.x,y:s.y,w:s.w,h:s.h}]))}
+      if(k<1) MM.tween=requestAnimationFrame(step); else {MM.tween=null;MM.pos=new Map([...L].map(([id,s])=>[id,{x:s.x,y:s.y,w:s.w,h:s.h}]));mmRecheck()}
     };
     if(dur) MM.tween=requestAnimationFrame(step); else step(t0+1);
   }
@@ -3029,7 +3044,7 @@ window.GHDB=(function(){
   function mmDelete(id){
     id=id||MM.sel; const f=mmFind(id); if(!f||!f.p) return;
     const i=f.p.c.indexOf(f.n), next=f.p.c[i+1]||f.p.c[i-1]||f.p;
-    const el=MM.els.get(id); if(el&&!reduced){const g=el.cloneNode(true);g.classList.add('gone');g.removeAttribute('data-id');g.style.pointerEvents='none';mmNodes.appendChild(g);g.animate([{opacity:1,scale:1},{opacity:0,scale:.6}],{duration:220,easing:'ease-in'}).onfinish=()=>g.remove()}
+    const el=MM.els.get(id); if(el&&!reduced){const g=el.cloneNode(true);g.classList.add('gone');g.removeAttribute('data-id');g.style.pointerEvents='none';mmNodes.appendChild(g);g.animate([{opacity:1,scale:1},{opacity:0,scale:.6}],{duration:220,easing:'ease-in'}).onfinish=()=>g.remove();setTimeout(()=>g.remove(),400)}
     if(mmChange(()=>{f.p.c.splice(i,1);MM.sel=next.id})){mmSelect(next.id);play('crumple')}
   }
   function mmToggle(id){id=id||MM.sel;const f=mmFind(id);if(!f||!(f.n.c||[]).length)return;mmChange(()=>{f.n.x=!f.n.x});play('soft')}
@@ -3315,6 +3330,7 @@ window.GHDB=(function(){
   }
   async function mmExportPng(){
     if(MM.outline) mmToggleOutline();
+    if(!MM.L) return;
     const L=MM.L, b=mmBounds(), pad=48, dpr=2, W=Math.ceil(b.x1-b.x0+pad*2), H=Math.ceil(b.y1-b.y0+pad*2);
     const cv=document.createElement('canvas'); cv.width=W*dpr; cv.height=H*dpr; const c=cv.getContext('2d'); c.scale(dpr,dpr);
     const css=getComputedStyle(document.documentElement), page=css.getPropertyValue('--mm-page').trim()||'#FBF7EE', ink=css.getPropertyValue('--mm-ink').trim()||'#2A2620';
