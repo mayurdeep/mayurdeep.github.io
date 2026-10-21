@@ -1669,7 +1669,7 @@ window.GHDB=(function(){
       if(e.target.closest('.tools'))return;
       if(selecting){toggleSelect(id);return}
       if(e.target.closest('.chk')){
-        if(mode()==='past'){const t=tasks.find(x=>x.id===id);if(t&&leftOpen(t,viewDate)&&!doneOnDay(t,viewDate))lateTick(id,viewDate);else frozen();return}
+        if(mode()==='past'){const t=tasks.find(x=>x.id===id);if(!t)return;if(doneOnDay(t,viewDate))bringBack(id,viewDate);else if(leftOpen(t,viewDate))lateTick(id,viewDate);else frozen();return}
         toggle(id);return;
       }
       openMap(id);
@@ -1726,9 +1726,10 @@ window.GHDB=(function(){
         const own=t.startOn===viewDate||(isRep(t)&&ruleMatches(t.repeat,viewDate));
         carry=!own; sTxt=own?(isRep(t)?'':'Pinned for this day'):'Carried over if still open'}
       else {done=isDone(t);
-        if(!done&&t.startOn&&t.startOn<TODAY){age=diffDays(t.startOn,TODAY);sTxt=(isRep(t)?'Due since ':'Open since ')+shortDay(t.startOn)}}
+        if(!done&&t.startOn&&t.startOn<TODAY){age=diffDays(t.startOn,TODAY);sTxt=(isRep(t)?'Due since ':'Open since ')+shortDay(t.startOn)}
+        if(!done&&!isRep(t)&&t.back&&t.back.from) sTxt='↩ Brought back from '+shortDay(t.back.from)}
       el.classList.toggle('done',done);
-      const ck=el.querySelector('.chk'); ck.setAttribute('aria-checked',String(done)); ck.setAttribute('aria-label',done?'Done. Tap to undo':'Mark as done');
+      const ck=el.querySelector('.chk'); ck.setAttribute('aria-checked',String(done)); ck.setAttribute('aria-label',done?(M==='past'?'Done. Tap to bring it back to today':'Done. Tap to undo'):'Mark as done'); ck.title=done&&M==='past'?'Uncheck and bring back to today':'';
       const mc=el.querySelector('.mmchip'), nNodes=mapCount(t.map); mc.hidden=!nNodes; mc.textContent='🧠 '+nNodes;
       el.classList.toggle('carry',carry);
       el.classList.toggle('leftopen',left);
@@ -2163,6 +2164,33 @@ window.GHDB=(function(){
     try{await write(id,fields);await bumpDay(k,1)}catch(e){toast('Could not save. Try again.');return}
     toast('Marked done on '+shortDay(k),'Undo',async()=>{stats.points-=5;stats.ticks-=1;saveStats();local(id,before);render();try{await write(id,before);await bumpDay(k,-1)}catch(e){}});
   }
+  /* uncheck a note finished on an older day. A normal note comes back to today's board, open again,
+     and remembers where it came from so it can be sent back. A repeating note just gets that one day unticked. */
+  async function bringBack(id,k){
+    const t=tasks.find(x=>x.id===id); if(!t||!db||busy.has(id)) return;
+    busy.add(id);
+    const pts=t.lastPts||10;
+    let fields, msg;
+    if(isRep(t)){fields={doneDates:doneDays(t).filter(x=>x!==k)};msg='Unticked on '+shortDay(k)}
+    else {fields={doneOn:null,startOn:TODAY,back:{from:k,start:t.startOn||k,pts}};msg='Brought back to today'}
+    if(stats){stats.points=Math.max(0,(stats.points||0)-pts);stats.ticks=Math.max(0,(stats.ticks||0)-1);saveStats()}
+    play('untick'); buzz(10); local(id,fields); render();
+    try{await write(id,fields);await bumpDay(k,-1);await saveDay()}catch(e){toast('Could not save. Try again.');busy.delete(id);return}
+    busy.delete(id);
+    toast(msg,isRep(t)?'Undo':'Go to today',isRep(t)?()=>lateTick(id,k):()=>setView(null));
+  }
+  /* undo a bring back: the note goes back to its old day as done */
+  async function sendBack(id){
+    const t=tasks.find(x=>x.id===id); if(!t||!t.back||!db||busy.has(id)) return;
+    busy.add(id);
+    const b=t.back, fields={doneOn:b.from,startOn:b.start||b.from,back:null,lastPts:b.pts||10};
+    if(stats){stats.points=(stats.points||0)+(b.pts||10);stats.ticks=(stats.ticks||0)+1;saveStats()}
+    const el=els.get(id); if(el){floatText(el,'Back to '+shortDay(b.from),'combo');burst(el,'normal',14)}
+    play('check'); local(id,fields); render();
+    try{await write(id,fields);await bumpDay(b.from,1);await saveDay()}catch(e){toast('Could not save. Try again.');busy.delete(id);return}
+    busy.delete(id);
+    toast('Sent back to '+shortDay(b.from)+' as done','Undo',()=>bringBack(id,b.from));
+  }
   async function saveOrder(){
     const ids=[...$('board').querySelectorAll('.note')].filter(n=>!n.hidden).map(n=>n.dataset.id);
     const changes=[];
@@ -2240,6 +2268,7 @@ window.GHDB=(function(){
     const items=[];
     if(M==='past'){
       if(leftOpen(t,viewDate)&&!doneOnDay(t,viewDate)) items.push(['✅','Mark done on this day',()=>lateTick(id,viewDate)]);
+      if(doneOnDay(t,viewDate)) items.push(['↩️',isRep(t)?'Uncheck this day':'Uncheck and bring back to today',()=>bringBack(id,viewDate)]);
       items.push(['✏️','Open notes',()=>openSheet(id)]);
       items.push(['🧠','Open mind map',()=>openMap(id)]);
     } else {
@@ -2248,6 +2277,7 @@ window.GHDB=(function(){
       if(isRep(t)) items.push(['🛑',t.repeat.until?'Change when it stops':'Stop repeating after a date',()=>openSheet(id,'end')]);
       items.push(['✏️','Open notes and colours',()=>openSheet(id)]);
       items.push(['🧠','Open mind map',()=>openMap(id)]);
+      if(!isRep(t)&&t.back&&t.back.from&&!t.doneOn) items.push(['⏪','Send back to '+shortDay(t.back.from)+' as done',()=>sendBack(id)]);
       if(M==='future') items.push(['📌','Move back to today',()=>moveTo(id,TODAY)]);
       else items.push(['⏭️','Move to tomorrow',()=>moveTo(id,addDays(TODAY,1))]);
       items.push(['📦','Put in the someday box',()=>toSomeday(id)]);
