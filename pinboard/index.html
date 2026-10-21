@@ -612,6 +612,35 @@ body.selecting .note.done .check{opacity:.3}
 @keyframes inflate{from{transform:scale(.3);opacity:.3}}
 
 
+/* Digital desk clock: a little LED alarm clock standing at the back of the desk */
+.clock{position:relative;width:150px;flex:none;cursor:pointer;outline:none;transform:rotate(-3deg);transform-origin:50% 100%;transition:transform .35s cubic-bezier(.3,1.5,.5,1)}
+.clock:hover,.clock:focus-visible{transform:rotate(-1.5deg) translateY(-5px)}
+.clock.press{transform:rotate(-3deg) translateY(2px) scale(.97);transition-duration:.08s}
+.clk-body{position:relative;z-index:2;border-radius:14px 14px 10px 10px;padding:9px 9px 6px;
+  background:linear-gradient(160deg,#3a3d45,#24262c 60%,#1b1c21);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -3px 0 rgba(0,0,0,.35),1px 2px 0 #121317,8px 12px 14px -6px rgba(20,10,0,.45)}
+.clk-screen{display:flex;align-items:center;gap:5px;border-radius:7px;padding:6px 6px 5px 8px;
+  background:radial-gradient(120% 140% at 30% 20%,#2a0f0b,#120605 70%);box-shadow:inset 0 2px 6px rgba(0,0,0,.8),inset 0 0 0 1px rgba(255,255,255,.04)}
+.clk-digits{width:104px;height:38px;flex:none;overflow:visible}
+.clk-digits .sg{fill:rgba(255,80,60,.07);transition:fill .12s}
+.clk-digits .sg.on{fill:#ff5a42;filter:drop-shadow(0 0 2.5px rgba(255,80,50,.85))}
+.clk-digits .cl{fill:#ff5a42;filter:drop-shadow(0 0 2.5px rgba(255,80,50,.85));transition:opacity .2s}
+.clock.blink .clk-digits .cl{opacity:.12}
+.clk-side{display:flex;flex-direction:column;align-items:center;gap:5px;font:500 8.5px/1 var(--f-mono);letter-spacing:.06em}
+.clk-ampm{color:#ff5a42;text-shadow:0 0 4px rgba(255,80,50,.7)}
+.clk-ampm.off{color:rgba(255,80,60,.12);text-shadow:none}
+.clk-sec{width:8px;height:8px;border-radius:50%;background:rgba(255,80,60,.1);transition:background .15s,box-shadow .15s}
+.clock.blink .clk-sec{background:#ff5a42;box-shadow:0 0 5px rgba(255,80,50,.9)}
+.clk-foot{display:flex;justify-content:space-between;margin-top:5px;padding:0 3px;font:500 8.5px/1 var(--f-mono);letter-spacing:.1em;color:rgba(255,255,255,.42)}
+.clk-mode{border:1px solid rgba(255,255,255,.22);border-radius:3px;padding:1px 3px}
+.clk-snooze{position:absolute;z-index:1;left:50%;top:-6px;width:46px;height:10px;margin-left:-23px;border-radius:5px 5px 2px 2px;
+  background:linear-gradient(180deg,#c9ccd3,#8d9099);box-shadow:inset 0 1px 0 rgba(255,255,255,.6),3px 3px 4px -1px rgba(20,10,0,.35);transition:transform .08s}
+.clock.press .clk-snooze{transform:translateY(4px)}
+.clk-leg{position:absolute;bottom:-5px;width:16px;height:7px;border-radius:0 0 4px 4px;background:#16171b;z-index:1}
+.clk-leg.l{left:16px}.clk-leg.r{right:16px}
+.clk-shadow{position:absolute;left:12px;right:-22px;bottom:-12px;height:16px;background:radial-gradient(closest-side,rgba(0,0,0,.42),transparent);filter:blur(2px)}
+@media (prefers-reduced-motion:reduce){.clock,.clock:hover{transition:none}}
+
 /* one light source, top left: every object on the desk casts its shadow down and to the right */
 .bin-body,.bin-lid,.bin-foot{filter:drop-shadow(6px 8px 6px rgba(20,10,0,.32))}
 .box-body{box-shadow:inset 0 2px 0 rgba(255,255,255,.2),8px 10px 12px -4px rgba(20,10,0,.4)}
@@ -639,6 +668,7 @@ body.selecting .note.done .check{opacity:.3}
   .desk-top .calc{order:2}
   .calc.lifted .calc-body{box-shadow:0 0 0 3px var(--gold),var(--shadow-hover)}
   .spinner,.bubbles{order:5}
+  .clock{order:3;margin-bottom:10px}
   .bubbles{transform:none}
   .bubbles.lifted{transform:scale(1.15)}
 }
@@ -646,7 +676,8 @@ body.selecting .note.done .check{opacity:.3}
 /* ---------- desk mode: things are scattered at different depths, back items sit higher and a little smaller ---------- */
 @media (min-width:900px) and (min-height:620px){
   .desk-top{display:block;position:relative;height:clamp(250px,31vh,300px);min-height:0;padding:0}
-  .desk-top>.tent,.desk-top>.pad,.desk-top>.calc,.desk-top>.mug,.desk-top>.spinner,.desk-top>.bubbles,.desk-top>.bell,.desk-top>.box,.desk-top>.bin{position:absolute;margin:0}
+  .desk-top>.tent,.desk-top>.pad,.desk-top>.calc,.desk-top>.mug,.desk-top>.spinner,.desk-top>.bubbles,.desk-top>.bell,.desk-top>.box,.desk-top>.bin,.desk-top>.clock{position:absolute;margin:0}
+  .desk-top>.clock{right:400px;bottom:150px;z-index:2}
   /* work things grouped on the left, open space in the middle, small things gathered at the back right, bin at the edge */
   /* left: calendar then calculator. middle: notepad. right: the small things, bin in the far corner. nothing overlaps. */
   .desk-top>.tent{left:24px;bottom:58px;scale:.9;z-index:2}
@@ -1005,6 +1036,19 @@ canvas#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-in
           </div>
         </div>
       </form>
+
+      <div class="clock" id="clock" role="button" tabindex="0" aria-label="Desk clock">
+        <span class="clk-shadow"></span>
+        <span class="clk-snooze" aria-hidden="true"></span>
+        <div class="clk-body">
+          <div class="clk-screen">
+            <svg class="clk-digits" id="clk-digits" viewBox="0 0 142 52" aria-hidden="true"></svg>
+            <div class="clk-side"><span class="clk-ampm" id="clk-ampm">AM</span><span class="clk-sec" id="clk-sec"></span></div>
+          </div>
+          <div class="clk-foot"><span class="clk-day" id="clk-day">MON 1</span><span class="clk-mode" id="clk-mode">12H</span></div>
+        </div>
+        <span class="clk-leg l"></span><span class="clk-leg r"></span>
+      </div>
 
 
       <div class="calc" id="calc" tabindex="0" aria-label="Desk calculator">
@@ -2930,6 +2974,63 @@ window.GHDB=(function(){
     }
     mmLayout(anim);
   }
+
+  /* ---------- digital desk clock ---------- */
+  (function(){
+    const ck=$('clock'); if(!ck) return;
+    const svg=$('clk-digits'), W=26, GAP=6;
+    const H=(x,y)=>`<polygon class="sg" points="${x+4},${y} ${x+6.5},${y-2.6} ${x+W-6.5},${y-2.6} ${x+W-4},${y} ${x+W-6.5},${y+2.6} ${x+6.5},${y+2.6}"/>`;
+    const V=(x,y1,y2)=>`<polygon class="sg" points="${x},${y1} ${x+2.6},${y1+2.5} ${x+2.6},${y2-2.5} ${x},${y2} ${x-2.6},${y2-2.5} ${x-2.6},${y1+2.5}"/>`;
+    const digit=x=>`<g class="dg" transform="translate(${x} 0) skewX(-7)">`+H(0,3)+V(W-3,5,25)+V(W-3,27,47)+H(0,49)+V(3,27,47)+V(3,5,25)+H(0,26)+'</g>';
+    const xs=[4,4+W+GAP,4+2*(W+GAP)+12,4+3*(W+GAP)+12];
+    svg.innerHTML=xs.map(digit).join('')+'<circle class="cl" cx="'+(xs[2]-8)+'" cy="17" r="2.7"/><circle class="cl" cx="'+(xs[2]-10)+'" cy="36" r="2.7"/>';
+    const segOf={0:'abcdef',1:'bc',2:'abged',3:'abgcd',4:'fgbc',5:'afgcd',6:'afgedc',7:'abc',8:'abcdefg',9:'abcdfg'};
+    const order='abcdefg', groups=[...svg.querySelectorAll('.dg')];
+    let h24=false; try{h24=localStorage.getItem('pb-clock24')==='1'}catch(e){}
+    const DAYS=['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    function show(d,i){const on=d==null?'':segOf[d];groups[i].querySelectorAll('.sg').forEach((p,j)=>p.classList.toggle('on',on.includes(order[j])))}
+    let lastMin=-1;
+    function draw(){
+      const now=new Date(), m=now.getMinutes(), hr=now.getHours();
+      ck.classList.toggle('blink',now.getSeconds()%2===1);
+      if(m===lastMin) return; lastMin=m;
+      const hh=h24?hr:(hr%12||12);
+      show(h24||hh>=10?Math.floor(hh/10):null,0); show(hh%10,1); show(Math.floor(m/10),2); show(m%10,3);
+      const pm=hr>=12; $('clk-ampm').textContent=pm?'PM':'AM'; $('clk-ampm').classList.toggle('off',h24);
+      $('clk-day').textContent=DAYS[now.getDay()]+' '+now.getDate(); $('clk-mode').textContent=h24?'24H':'12H';
+      const spoken=h24?String(hr).padStart(2,'0')+':'+String(m).padStart(2,'0'):hh+':'+String(m).padStart(2,'0')+' '+(pm?'PM':'AM');
+      ck.setAttribute('aria-label','Desk clock, '+spoken+'. Tap to switch to '+(h24?'12':'24')+' hour time');
+      ck.title='Tap to switch to '+(h24?'12':'24')+' hour time';
+    }
+    function tickLoop(){draw();setTimeout(tickLoop,1000-(Date.now()%1000)+5)}
+    tickLoop();
+    function flip(){
+      h24=!h24; try{localStorage.setItem('pb-clock24',h24?'1':'0')}catch(e){}
+      lastMin=-1; draw(); buzz(8);
+      if(sound){try{tone(2350,0,.07,.06,'square');tone(2350,.11,.07,.06,'square')}catch(e){}}
+      ck.classList.add('press'); setTimeout(()=>ck.classList.remove('press'),140);
+    }
+    ck.addEventListener('click',flip);
+    ck.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();flip()}});
+    ck.addEventListener('pointerenter',e=>{if(e.pointerType==='mouse')play('hover',200)});
+    /* stand it at the back of the desk, centred in the open space between the notepad and the things on the right */
+    const desk=document.querySelector('.desk-top'), pad=$('add');
+    function place(){
+      if(getComputedStyle(ck).position!=='absolute'){ck.style.left=ck.style.right=ck.style.bottom=ck.style.scale='';return}
+      if(pad.classList.contains('lifted')||pad.matches(':focus-within')) return;
+      const D=desk.getBoundingClientRect(), P=pad.querySelector('.pad-sheet').getBoundingClientRect(), S=$('spinner').getBoundingClientRect(), B=$('sound').getBoundingClientRect();
+      const w=ck.offsetWidth, h=ck.offsetHeight, big=innerWidth>=1700;
+      const L=P.right-D.left+22, Rr=S.left-D.left-22, room=Rr-L;
+      let k=Math.min(big?1.1:.92, room/w), x, bottom;
+      if(k>=.72){x=(L+Rr)/2-w/2; bottom=Math.max(D.bottom-B.bottom-4,40)}
+      else {k=Math.min(.72,(P.top-D.top-14)/h); const edge=Math.min(P.right,S.left-14)-D.left-4; x=edge-w*k/2-w/2; bottom=D.bottom-P.top+8}
+      ck.style.right='auto'; ck.style.left=Math.round(x)+'px'; ck.style.bottom=Math.round(bottom)+'px'; ck.style.scale=k.toFixed(3);
+    }
+    let pend=0; const later=()=>{cancelAnimationFrame(pend);pend=requestAnimationFrame(place)};
+    addEventListener('resize',later); addEventListener('load',later); setTimeout(later,300); setTimeout(later,1500);
+    if('ResizeObserver' in window) new ResizeObserver(later).observe(desk);
+    if(document.fonts&&document.fonts.ready) document.fonts.ready.then(later);
+  })();
   function mmCountAll(n){let k=0;(n.c||[]).forEach(c=>mmWalk(c,()=>k++));return k}
 
   /* layout: a sideways tree growing to the right */
